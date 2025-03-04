@@ -55,6 +55,11 @@ import ContestHistory from './pages/profile-editor/ContestHistory.jsx'
 // IDE Page
 import IDE from "./components/IDE.jsx"
 
+// Blog Pages
+import BlogListPage from './pages/BlogListPage.jsx'
+import BlogViewPage from './pages/BlogViewPage.jsx'
+import BlogEditorPage from './pages/BlogEditorPage.jsx'
+
 // Advanced DB Feature Pages
 import LeaderboardPage from './pages/LeaderboardPage.jsx'
 import PlatformDashboard from './pages/PlatformDashboard.jsx'
@@ -151,6 +156,12 @@ const router = createBrowserRouter([
 
       // IDE
       { path: 'IDE/code', element: <IDE /> },
+
+      // Blogs
+      { path: 'blogs', element: <BlogListPage /> },
+      { path: 'blogs/new', element: <BlogEditorPage /> },
+      { path: 'blogs/:id', element: <BlogViewPage /> },
+      { path: 'blogs/:id/edit', element: <BlogEditorPage /> },
 
       // Advanced DB Features
       { path: 'leaderboard', element: <LeaderboardPage /> },

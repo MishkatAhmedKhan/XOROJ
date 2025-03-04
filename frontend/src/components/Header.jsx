@@ -115,6 +115,14 @@ export default function Header() {
               Author
             </NavLink>
             <NavLink
+              to="/blogs"
+              className={({ isActive }) =>
+                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
+              }
+            >
+              Blogs
+            </NavLink>
+            <NavLink
               to="/leaderboard"
               className={({ isActive }) =>
                 `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
@@ -201,6 +209,7 @@ export default function Header() {
             <NavLink to="/problems" onClick={closeMobile} className="link link-hover text-lg">Problems</NavLink>
             <NavLink to="/contests" onClick={closeMobile} className="link link-hover text-lg">Contests</NavLink>
             <NavLink to="/author" onClick={closeMobile} className="link link-hover text-lg">Author</NavLink>
+            <NavLink to="/blogs" onClick={closeMobile} className="link link-hover text-lg">Blogs</NavLink>
 
             <div className="divider my-2" />
 
