@@ -30,4 +30,12 @@ public class ContestService {
             contestRepo.save(contest);
         }
     }
+    
+    public LocalDateTime getContestEndTime(Long contestId) {
+        Contest contest = contestRepo.findById(contestId).orElse(null);
+        if (contest != null) {
+            return contest.getEndTime();
+        }
+        return null;
+    }
 }
