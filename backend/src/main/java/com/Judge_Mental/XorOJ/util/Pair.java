@@ -1,0 +1,24 @@
+package com.Judge_Mental.XorOJ.util;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Pair<T, U> {
+    private T first;
+    private U second;
+
+    @JsonCreator
+    public Pair(
+            @JsonProperty("first") T first,
+            @JsonProperty("second") U second
+    ) {
+        this.first = first;
+        this.second = second;
+    }
+}
