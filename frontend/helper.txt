@@ -1,0 +1,4 @@
+colour pallate: colour-1: FFFDF6
+                colour-2: FAF6E9
+                colour-3: DDEB9D
+                colour-4: A0C878

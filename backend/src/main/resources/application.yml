@@ -7,10 +7,33 @@ spring:
   jpa:
     open-in-view: true #change in prod
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # change to update
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+  
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 10MB
+      max-request-size: 15MB
+      
+file:
+  upload-dir: ../uploads
+
+submission:
+  storage:
+    path: ../submissions
+  thread:
+    virtual:
+      enabled: true
 server:
   port: 8081
+  compression:
+    enabled: true
+    mime-types: application/json,text/event-stream
+    min-response-size: 512
+  http2:
+    enabled: true

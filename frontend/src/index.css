@@ -2,18 +2,6 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Custom TODO styling for better visibility */
-.todo {
-  background-color: #fef3c7;
-  color: #92400e;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  display: inline-block;
-  margin: 0.25rem 0;
-}
-
 /* 
 @tailwind base;
 @tailwind components;

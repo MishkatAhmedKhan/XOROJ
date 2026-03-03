@@ -1,6 +1,7 @@
 package com.Judge_Mental.XorOJ.controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,16 +79,19 @@ public class SubmissionController {
             submission.language()
         );
         savedSubmission = judgingService.judgeSubmission(savedSubmission);
-
-        if(contestId <= 0 && contestService.getContestEndTime(contestId) == null && contestService.getContestEndTime(contestId).isBefore(savedSubmission.getSubmissionTime())) {
+        // System.out.println("Judged submission with status: " + savedSubmission.getStatus());
+        if (contestId > 0) {
+            LocalDateTime endTime = contestService.getContestEndTime(contestId);
+            if (endTime != null && endTime.isAfter(savedSubmission.getSubmissionTime())) {
                 scoreboardService.updateStandingsForSubmission(
-                contestId,
-                problemId,
-                user.getId(),
-                user.getUsername(),
-                savedSubmission.getStatus() == SubmissionStatus.ACCEPTED,
-                savedSubmission.getSubmissionTime()
-            );
+                    contestId,
+                    problemId,
+                    user.getId(),
+                    user.getUsername(),
+                    savedSubmission.getStatus() == SubmissionStatus.ACCEPTED,
+                    savedSubmission.getSubmissionTime()
+                );
+            }
         }
         
         return savedSubmission.getStatus();
@@ -107,6 +111,7 @@ public class SubmissionController {
             submission.language()
         );
         savedSubmission = judgingService.judgeSubmission(savedSubmission);
+        System.out.println("Judged submission with status: " + savedSubmission.getStatus());
         return savedSubmission.getStatus();
     }
 

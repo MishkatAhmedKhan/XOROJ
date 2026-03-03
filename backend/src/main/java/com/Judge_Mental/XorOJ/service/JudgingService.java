@@ -76,6 +76,7 @@ public class JudgingService {
             String submissionFilePath = submission.getFilePath();
             Path path = Paths.get(submissionFilePath);
             if (!Files.exists(path)) {
+                System.out.println("Submission file not found: " + submissionFilePath);
                 submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
                 submission.setErrorMessage("Submission file not found: " + submissionFilePath);
                 return submissionRepository.save(submission);
@@ -84,7 +85,8 @@ public class JudgingService {
             // Get the main solution path
             String mainSolutionPath = problem.getMainSolutionPath();
             if (mainSolutionPath == null || mainSolutionPath.isEmpty()) {
-                submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
+                System.out.println("No main solution available for problem ID: " + problem.getId());
+                submission.setStatus(SubmissionStatus.ACCEPTED);
                 submission.setErrorMessage("No main solution available for this problem");
                 return submissionRepository.save(submission);
             }
@@ -115,6 +117,7 @@ public class JudgingService {
 
                     // If any test fails with a non-AC status, we can stop judging
                     if (verdict.status != SubmissionStatus.ACCEPTED) {
+                        System.out.println(verdict);
                         submission.setStatus(verdict.status);
                         submission.setErrorMessage(verdict.message);
                         return submissionRepository.save(submission);
@@ -135,7 +138,7 @@ public class JudgingService {
                             memoryLimitKB
                     );
                     verdicts.add(verdict);
-                    System.out.println(verdict);
+                    System.out.println(verdict.message);
                     executionTime = Math.max(executionTime, verdict.timeUsedMillis);
                     memoryUsed = Math.max(memoryUsed, verdict.memoryUsedKB);
                     submission.setExecutionTime(executionTime);
@@ -143,6 +146,7 @@ public class JudgingService {
 
                     // If any test fails with a non-AC status, we can stop judging
                     if (verdict.status != SubmissionStatus.ACCEPTED) {
+                        System.out.println(verdict);
                         submission.setStatus(verdict.status);
                         submission.setErrorMessage(verdict.message);
                         return submissionRepository.save(submission);
@@ -156,6 +160,7 @@ public class JudgingService {
             
             return  submissionRepository.save(submission);
         } catch (Exception e) {
+            System.out.println(e);
             // Handle any exceptions
             submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
             submission.setErrorMessage("Error during judging: " + e.getMessage());

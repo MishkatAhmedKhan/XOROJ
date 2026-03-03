@@ -1,0 +1,183 @@
+:root {
+  /* shared radii/shadows for a cohesive feel */
+  --radius: 12px;
+  --shadow-1: 0 2px 10px rgba(0,0,0,.06);
+  --shadow-2: 0 8px 24px rgba(0,0,0,.12);
+}
+
+/* Light */
+html[data-theme='light'] {
+  /* your neutrals */
+  --colour-1: #F8FFF4;
+  --colour-2: #333333;
+  --colour-3: #fafac6c2;
+  --colour-4: #000000;
+  --colour-5: #e9e9e9;
+  --colour-6: rgba(0,0,0,0.035);
+
+  /* accent & states (Blue) */
+  --accent-600: #2563eb; /* primary/CTA bg */
+  --accent-500: #3b82f6; /* hover */
+  --accent-400: #60a5fa; /* focus ring/soft fills */
+  --accent-contrast: #ffffff;
+
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger:  #ef4444;
+}
+
+/* Dark */
+html[data-theme='dark'] {
+  /* your neutrals */
+  --colour-1: #0f172a;
+  --colour-2: #e5e7eb;
+  --colour-3: #2d3748;
+  --colour-4: #ffffff;
+  --colour-5: #374151;
+  --colour-6: rgba(255,255,255,.06);
+
+  /* brighten a step in dark mode so CTAs pop */
+  --accent-600: #3b82f6;
+  --accent-500: #60a5fa;
+  --accent-400: #93c5fd;
+  --accent-contrast: #ffffff; /* readable on light CTA shades */
+
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --danger:  #f87171;
+}
+
+
+/* Apply background color globally */
+body {
+  background-color: var(--colour-1);
+  color: var(--colour-2);
+  transition: background-color 0.3s ease, color 0.3s ease;  /* Smooth transition */
+}
+
+
+header, footer {
+  background-color: var(--colour-3);  /* Header background color controlled by theme */
+  color: var(--colour-4);  /* Header text color controlled by theme */
+}
+
+/* Table "card" container */
+.table-card {
+  background-color: var(--colour-1);
+  border: 2px solid var(--colour-5);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px --colour-6;
+  overflow: hidden;
+}
+
+/* Table basics */
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table-card thead th {
+  background-color: var(--colour-1);
+  color: var(--colour-2);
+  font-weight: 600;
+}
+
+.table-card th,
+.table-card td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--colour-5);
+  border-bottom: 1px solid var(--colour-5);
+  border-right: 1px solid var(--colour-5);
+  border-left: 1px solid var(--colour-5);
+  vertical-align: middle;
+}
+
+.table-card tbody tr:hover {
+  background-color: var(--colour-6);
+}
+
+/* Sidebar panel style */
+.panel {
+  background-color: var(--colour-1);
+  border: 2px solid var(--colour-5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Muted helper (for tags line) */
+.muted {
+  color: var(--muted-text);
+  font-size: 12px;
+}
+
+/* Soft badges for numbers */
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+
+/* Shrink table nicely on small screens (no horizontal scroll) */
+@media (max-width: 640px) {
+  .table-card table { table-layout: fixed; } /* enforce fixed layout on small */
+  .table-card th, .table-card td { padding: 0.4rem 0.5rem; }
+  .table-card thead th { font-size: 0.85rem; }
+
+  /* Softer, narrower badges on small screens */
+  .badge-soft {
+    min-width: 2rem;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.72rem;
+  }
+}
+
+
+/* Make problem-title links look like normal table text */
+.table-card td a,
+.table-card td a:visited {
+  color: var(--colour-2);
+  text-decoration: none;
+  font-weight: 600;         /* optional: keeps the title a bit prominent */
+}
+
+.table-card td a:hover {
+  text-decoration: none;
+  opacity: 0.85;            /* subtle hover without underline/color change */
+}
+
+.table-card td a:focus-visible {
+  outline: 2px solid var(--colour-5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+
+/* Resizer styles for SplitPane */
+.Resizer {
+  background: var(--colour-5);
+  opacity: 0.6;
+  z-index: 10;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+.Resizer:hover {
+  transition: all 0.2s ease;
+  opacity: 1;
+  cursor: col-resize;
+}
+
+/* Themed text class for consistent text coloring */
+.themed-text {
+  color: var(--colour-4); /* Uses the primary text color defined per theme */
+  transition: color 0.0s ease;
+}

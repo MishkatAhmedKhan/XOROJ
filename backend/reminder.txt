@@ -1,0 +1,7 @@
+After manually inserting entries in database use this
+
+//
+SELECT setval(pg_get_serial_sequence('table_name','auto_generated_value_name'), COALESCE((SELECT MAX(id) FROM users), 0), true);
+//
+
+replace users with table_name with table name and auto_generated_value_name with id

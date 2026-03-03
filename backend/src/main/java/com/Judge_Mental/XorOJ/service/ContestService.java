@@ -1,16 +1,27 @@
 package com.Judge_Mental.XorOJ.service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.Judge_Mental.XorOJ.dto.ContestResponseDTO;
+import com.Judge_Mental.XorOJ.entity.Contest;
+import com.Judge_Mental.XorOJ.entity.Problem;
 import com.Judge_Mental.XorOJ.repo.ContestRepository;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 import com.Judge_Mental.XorOJ.model.Contest;
 =======
 import com.Judge_Mental.XorOJ.util.Pair;
 >>>>>>> 7f03888a (contest creation)
+=======
+import com.Judge_Mental.XorOJ.util.Pair;
+>>>>>>> Stashed changes
 
 
 @Service
@@ -21,21 +32,37 @@ public class ContestService {
     
     @Autowired
     private ProblemService problemService;
+<<<<<<< Updated upstream
+=======
+
+    public Contest createContest(Long userId) {
+        Contest contest = new Contest();
+        contest.setAuthorId(userId);
+        return contestRepo.save(contest);
+    }
+>>>>>>> Stashed changes
 
     public List<Contest> getAllContests() {
         return contestRepo.findAll();
     }
 
     public Contest findById(Long id) {
-        return contestRepo.findById(id).orElse(null);
+        Contest contest = contestRepo.findById(id).orElse(null);
+        return contest;
     }
 
-    public void registerUserForContest(Long contestId, com.Judge_Mental.XorOJ.model.XUser user) {
+    public boolean registerUserForContest(Long contestId, com.Judge_Mental.XorOJ.entity.XUser user) {
         Contest contest = findById(contestId);
         if (contest != null) {
             contest.getParticipants().add(user);
             contestRepo.save(contest);
+            return true;
         }
+        return false;
+    }
+
+    public List<Contest> findContestsByAuthorId(Long authorId) {
+        return contestRepo.findContestsByAuthorId(authorId);
     }
     
     public LocalDateTime getContestEndTime(Long contestId) {
@@ -45,8 +72,11 @@ public class ContestService {
         }
         return null;
     }
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Stashed changes
 
 
     //Edit
@@ -92,5 +122,12 @@ public class ContestService {
         }
         return false;
     }
+<<<<<<< Updated upstream
 >>>>>>> 7f03888a (contest creation)
+=======
+
+    public List<ContestResponseDTO> findContestsDTOByUserId(Long userId) {
+        return contestRepo.findContestsDTOByUserId(userId);
+    }
+>>>>>>> Stashed changes
 }
