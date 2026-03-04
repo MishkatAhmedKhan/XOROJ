@@ -114,6 +114,12 @@ export default function ProfilePage() {
             {tab.name}
           </NavLink>
         ))}
+        <Link
+          to={`/analytics/${username}`}
+          className={`${navLinkClass} border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300`}
+        >
+          Analytics
+        </Link>
       </nav>
 
       {/* Outlet renders child tab component */}

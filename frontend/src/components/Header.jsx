@@ -114,6 +114,22 @@ export default function Header() {
             >
               Author
             </NavLink>
+            <NavLink
+              to="/leaderboard"
+              className={({ isActive }) =>
+                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
+              }
+            >
+              Leaderboard
+            </NavLink>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
+              }
+            >
+              Dashboard
+            </NavLink>
           </nav>
         </div>
 

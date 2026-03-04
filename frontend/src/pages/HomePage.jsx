@@ -196,6 +196,33 @@ export default function HomePage() {
             <div className="text-5xl mb-3">🛠️</div>
             <div className="font-semibold">Create Problem</div>
           </Link>
+
+          <Link
+            to="/leaderboard"
+            className="panel hover:shadow-md transition-shadow text-center"
+            style={{ borderColor: "var(--colour-5)" }}
+          >
+            <div className="text-5xl mb-3">📊</div>
+            <div className="font-semibold">Leaderboard</div>
+          </Link>
+
+          <Link
+            to="/recommendations"
+            className="panel hover:shadow-md transition-shadow text-center"
+            style={{ borderColor: "var(--colour-5)" }}
+          >
+            <div className="text-5xl mb-3">💡</div>
+            <div className="font-semibold">Recommendations</div>
+          </Link>
+
+          <Link
+            to="/dashboard"
+            className="panel hover:shadow-md transition-shadow text-center"
+            style={{ borderColor: "var(--colour-5)" }}
+          >
+            <div className="text-5xl mb-3">📈</div>
+            <div className="font-semibold">Dashboard</div>
+          </Link>
         </div>
       </section>
     </div>

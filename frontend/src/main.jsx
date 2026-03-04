@@ -55,6 +55,13 @@ import ContestHistory from './pages/profile-editor/ContestHistory.jsx'
 // IDE Page
 import IDE from "./components/IDE.jsx"
 
+// Advanced DB Feature Pages
+import LeaderboardPage from './pages/LeaderboardPage.jsx'
+import PlatformDashboard from './pages/PlatformDashboard.jsx'
+import AuditLogPage from './pages/AuditLogPage.jsx'
+import UserAnalyticsPage from './pages/UserAnalyticsPage.jsx'
+import RecommendationsPage from './pages/RecommendationsPage.jsx'
+
 // Auth Pages
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
@@ -144,6 +151,13 @@ const router = createBrowserRouter([
 
       // IDE
       { path: 'IDE/code', element: <IDE /> },
+
+      // Advanced DB Features
+      { path: 'leaderboard', element: <LeaderboardPage /> },
+      { path: 'dashboard', element: <PlatformDashboard /> },
+      { path: 'audit-log', element: <AuditLogPage /> },
+      { path: 'analytics/:username', element: <UserAnalyticsPage /> },
+      { path: 'recommendations', element: <RecommendationsPage /> },
     ],
   },
 ])
