@@ -78,7 +78,6 @@ export default function MyContests() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {contests.map((c) => (
-            console.log(c),
             <Card key={c.id} title={c.title}>
               <p className="text-sm text-gray-700 line-clamp-3">{c.description}</p>
 

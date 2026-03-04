@@ -35,6 +35,10 @@ export async function apiFetch(url, options = {}) {
     err.code = body?.code;
     throw err;
   }
+  // 304 Not Modified — return null so callers can keep their current data
+  if (res.status === 304) {
+    return null;
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `HTTP ${res.status}`);

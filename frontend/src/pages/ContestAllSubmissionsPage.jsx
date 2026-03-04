@@ -10,7 +10,6 @@ export default function ContestAllSubmissionsPage() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [codePopup, setCodePopup] = useState(null); // state to manage the code popup
   const [pageNumber, setPageNumber] = useState(1); // Track the current page
   const [totalPages, setTotalPages] = useState(0); // Track the total pages
 
@@ -55,7 +54,6 @@ export default function ContestAllSubmissionsPage() {
                   <th className="py-2 px-3">Status</th>
                   <th className="py-2 px-3">Execution Time</th>
                   <th className="py-2 px-3">Memory Used</th>
-                  <th className="py-2 px-3">View Code</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,17 +92,7 @@ export default function ContestAllSubmissionsPage() {
                       {s.executionTime != null ? `${s.executionTime} ms` : "—"}
                     </td>
                     <td className="py-2 px-3">
-                      {s.memoryUsed != null
-                        ? `${(s.memoryUsed / 1024).toFixed(1)} KB`
-                        : "—"}
-                    </td>
-                    <td className="py-2 px-3">
-                      <button
-                        onClick={() => setCodePopup(s.code)}
-                        className="btn btn-outline btn-sm"
-                      >
-                        View Code
-                      </button>
+                      {s.memoryUsed != null ? `${s.memoryUsed} KB` : "—"}
                     </td>
                   </tr>
                 ))}
@@ -144,26 +132,6 @@ export default function ContestAllSubmissionsPage() {
           Back to Contest
         </Link>
       </div>
-
-      {/* Code Popup */}
-      {codePopup && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-10">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-2/3">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              Submitted Code
-            </h3>
-            <pre className="overflow-x-auto bg-gray-100 dark:bg-slate-700 p-3 rounded">
-              {codePopup}
-            </pre>
-            <button
-              onClick={() => setCodePopup(null)}
-              className="mt-4 btn btn-secondary"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -171,15 +139,22 @@ export default function ContestAllSubmissionsPage() {
 // Helper function to style verdicts
 function getVerdictColor(verdict) {
   if (!verdict) return "text-gray-700";
-  switch (verdict.toLowerCase()) {
-    case "accepted":
+  switch (verdict.toUpperCase()) {
+    case "ACCEPTED":
       return "text-green-600";
-    case "wrong answer":
+    case "WRONG_ANSWER":
       return "text-red-600";
-    case "runtime error":
+    case "RUNTIME_ERROR":
       return "text-yellow-700";
-    case "time limit exceeded":
+    case "TIME_LIMIT_EXCEEDED":
       return "text-orange-600";
+    case "MEMORY_LIMIT_EXCEEDED":
+      return "text-orange-600";
+    case "COMPILATION_ERROR":
+      return "text-red-700";
+    case "PENDING":
+    case "RUNNING":
+      return "text-blue-600";
     default:
       return "text-gray-700";
   }

@@ -89,11 +89,11 @@ export default function GeneralInfo() {
         outputFileType: problemData.outputFileType || "",
         difficultyRating: problemData.difficultyRating || 800,
         timeLimit: problemData.timeLimit || 1000,
-        memoryLimit: problemData.memoryLimit || 256,
+        memoryLimit: problemData.memoryLimit || 256 * 1024,
         contestId: problemData.contestId || "",
         tags: problemData.tags || [],
       };
-      payload.memoryLimit *= 1024; // Convert MB to KB
+      // memoryLimit is already stored in KB in problemData
       console.log("Sending general info update:", payload);
       const res = await apiFetch(`/api/edit/problems/${problemData.id}/generalinfo`, {
         method: "POST",
@@ -152,9 +152,9 @@ export default function GeneralInfo() {
           <input
             type="number"
             className="w-full border rounded px-2 py-1"
-            value={problemData.memoryLimit / 1024 || 256}
+            value={Math.round(problemData.memoryLimit / 1024) || 256}
             onChange={(e) =>
-              setProblemData({ ...problemData, memoryLimit: Number(e.target.value) })
+              setProblemData({ ...problemData, memoryLimit: Number(e.target.value) * 1024 })
             }
             min={4}
             max={1024}

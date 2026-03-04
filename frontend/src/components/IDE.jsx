@@ -120,18 +120,27 @@ n = int(data[0])
           language,
         }),
       });
-      const normalized = normalizeResult(data);
-      setResult(normalized);
-      onResult?.(normalized);
-      // Show success notification
-      alert("Submission successful!");
+      // The submit endpoint returns a verdict string (e.g. "ACCEPTED")
+      if (typeof data === 'string') {
+        const verdictResult = {
+          stdout: `Verdict: ${data}`,
+          stderr: "",
+          time: "",
+          memory: "",
+        };
+        setResult(verdictResult);
+        onResult?.(verdictResult);
+      } else {
+        const normalized = normalizeResult(data);
+        setResult(normalized);
+        onResult?.(normalized);
+      }
     } catch (e) {
       setError(e?.message || "Submission failed");
-      alert("Submission failed: " + (e?.message || "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }
-  }, [canRun, code, language, stdinText, endpointSubmit, onResult]);
+  }, [canRun, code, language, endpointSubmit, onResult]);
 
   // Ctrl/Cmd + Enter to run
   useEffect(() => {

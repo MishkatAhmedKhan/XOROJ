@@ -108,7 +108,7 @@ export default function MyProblems() {
                 <span>Difficulty: <b>{p.difficultyRating}</b></span>
                 <span>Accepted: <b>{p.solveCount}</b></span>
                 <span>Time Limit: <b>{p.timeLimit} ms</b></span>
-                <span>Memory: <b>{Math.floor(p.memoryLimit / 1000)} MB</b></span>
+                <span>Memory: <b>{Math.round(p.memoryLimit / 1024)} MB</b></span>
               </div>
 
               <div className="mt-4 flex gap-2">

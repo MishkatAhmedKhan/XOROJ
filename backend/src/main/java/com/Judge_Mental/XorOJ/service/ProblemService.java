@@ -46,6 +46,14 @@ public class ProblemService {
         return problem;
     }
 
+    /**
+     * Find problem by ID without contest-time filtering.
+     * Used by internal services (test files, generators) that need access regardless of contest status.
+     */
+    public Problem findProblemByIdUnfiltered(Long id) {
+        return problemRepo.findProblemById(id).orElse(null);
+    }
+
     public List<Problem> findProblemsByDifficultyRating(Integer minRating, Integer maxRating) {
         if (minRating == null) minRating = 800;
         if (maxRating == null) maxRating = 4000;

@@ -86,13 +86,13 @@ public class JudgingService {
             String mainSolutionPath = problem.getMainSolutionPath();
             if (mainSolutionPath == null || mainSolutionPath.isEmpty()) {
                 System.out.println("No main solution available for problem ID: " + problem.getId());
-                submission.setStatus(SubmissionStatus.ACCEPTED);
-                submission.setErrorMessage("No main solution available for this problem");
+                submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
+                submission.setErrorMessage("Problem not configured for judging yet (no main solution)");
                 return submissionRepository.save(submission);
             }
             
             int timeLimitMs = problem.getTimeLimit();
-            int memoryLimitKB = problem.getMemoryLimit();
+            int memoryLimitKB = problem.getMemoryLimit(); // stored in KB in DB
             
             // Results storage
             List<JudgeVerdict> verdicts = new ArrayList<>();
@@ -155,10 +155,17 @@ public class JudgingService {
                 }
             }
             
+            // If no tests were run at all, it's a configuration error — not ACCEPTED
+            if (verdicts.isEmpty()) {
+                submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
+                submission.setErrorMessage("No test cases configured for this problem");
+                return submissionRepository.save(submission);
+            }
+
             submission.setStatus(SubmissionStatus.ACCEPTED);
             submission.setErrorMessage(null);
             
-            return  submissionRepository.save(submission);
+            return submissionRepository.save(submission);
         } catch (Exception e) {
             System.out.println(e);
             // Handle any exceptions

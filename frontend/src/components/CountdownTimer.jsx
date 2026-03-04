@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function CountdownTimer({ startTime, onExpire }) {
+export default function CountdownTimer({ startTime, onExpire, expiredText = "Contest Started!" }) {
   const [timeLeft, setTimeLeft] = useState(Math.max(new Date(startTime) - new Date(), 0));
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function CountdownTimer({ startTime, onExpire }) {
 
   return (
     <span className="font-mono">
-      {timeLeft > 0 ? formatTime(timeLeft) : "Contest Started!"}
+      {timeLeft > 0 ? formatTime(timeLeft) : expiredText}
     </span>
   );
 }

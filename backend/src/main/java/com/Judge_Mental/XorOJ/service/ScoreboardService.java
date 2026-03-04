@@ -181,8 +181,25 @@ public class ScoreboardService {
             s.endEpochMs = toEpochMs(t.getEndTime());
         }
         s.problemIds = Optional.ofNullable(contestRepo.findProblemIds(contestId)).orElseGet(List::of);
-        // If we have a stored snapshot, prefer it:
-        loadSnapshot(contestId);
+
+        // Load persisted snapshot directly (avoid calling loadSnapshot which does
+        // another computeIfAbsent on the same key — that causes IllegalStateException)
+        var opt = snapshotRepo.findById(contestId);
+        if (opt.isPresent()) {
+            try {
+                StandingsSnapshotEntity e = opt.get();
+                StandingsDTO dto = objectMapper.readValue(e.getPayloadJson(), StandingsDTO.class);
+                s.problemIds = dto.problemIds() == null ? List.of() : List.copyOf(dto.problemIds());
+                s.rowsByUser.clear();
+                if (dto.rows() != null) for (var r : dto.rows()) s.rowsByUser.put(r.userId(), r);
+                s.version.set(e.getVersion());
+                s.startEpochMs = dto.startEpochMs();
+                s.endEpochMs = dto.endEpochMs();
+                s.finalized = e.isFinalized();
+            } catch (Exception ex) {
+                // Failed to deserialize stored snapshot — continue with empty one
+            }
+        }
         return s;
     }
 

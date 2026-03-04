@@ -60,7 +60,7 @@ export default function Statement() {
         Time Limit: <strong>${problemData?.timeLimit || 1000} ms</strong>
       </p>
       <p style="margin: 0.25rem 0; font-size: 0.95rem; color: #4b5563;">
-        Memory Limit: <strong>${problemData?.memoryLimit || 256} MB</strong>
+        Memory Limit: <strong>${Math.round((problemData?.memoryLimit || 256 * 1024) / 1024)} MB</strong>
       </p>
     </div>
 

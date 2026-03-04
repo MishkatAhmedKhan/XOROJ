@@ -118,7 +118,7 @@ export default function HomePage() {
                 <img
                   src={s.img}
                   alt={s.label}
-                  className="w-full h-full object-cover select-none pointer-events-none"
+                  className="w-full h-full object-cover object-bottom select-none pointer-events-none"
                   draggable={false}
                 />
 

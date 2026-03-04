@@ -38,7 +38,12 @@ public class JWTFilter extends OncePerRequestFilter{
 
         if(authHeader != null && authHeader.startsWith("Bearer ")){
             token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
+            try {
+                username = jwtService.extractUsername(token);
+            } catch (Exception e) {
+                // Token is invalid/expired/malformed — continue without authentication
+                // The security chain will return 401 if the endpoint requires auth
+            }
         }
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){

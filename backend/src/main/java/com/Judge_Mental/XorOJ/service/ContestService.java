@@ -13,15 +13,7 @@ import com.Judge_Mental.XorOJ.dto.ContestResponseDTO;
 import com.Judge_Mental.XorOJ.entity.Contest;
 import com.Judge_Mental.XorOJ.entity.Problem;
 import com.Judge_Mental.XorOJ.repo.ContestRepository;
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-import com.Judge_Mental.XorOJ.model.Contest;
-=======
 import com.Judge_Mental.XorOJ.util.Pair;
->>>>>>> 7f03888a (contest creation)
-=======
-import com.Judge_Mental.XorOJ.util.Pair;
->>>>>>> Stashed changes
 
 
 @Service
@@ -32,15 +24,12 @@ public class ContestService {
     
     @Autowired
     private ProblemService problemService;
-<<<<<<< Updated upstream
-=======
 
     public Contest createContest(Long userId) {
         Contest contest = new Contest();
         contest.setAuthorId(userId);
         return contestRepo.save(contest);
     }
->>>>>>> Stashed changes
 
     public List<Contest> getAllContests() {
         return contestRepo.findAll();
@@ -72,11 +61,6 @@ public class ContestService {
         }
         return null;
     }
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
-=======
->>>>>>> Stashed changes
 
 
     //Edit
@@ -122,12 +106,8 @@ public class ContestService {
         }
         return false;
     }
-<<<<<<< Updated upstream
->>>>>>> 7f03888a (contest creation)
-=======
 
     public List<ContestResponseDTO> findContestsDTOByUserId(Long userId) {
         return contestRepo.findContestsDTOByUserId(userId);
     }
->>>>>>> Stashed changes
 }

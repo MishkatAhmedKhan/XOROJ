@@ -36,7 +36,7 @@ public class TestFileService {
         }
         
         // Check if problem exists
-        Problem problem = problemService.findProblemById(problemId);
+        Problem problem = problemService.findProblemByIdUnfiltered(problemId);
 
         if(problem == null) {
             System.out.println("Problem not found");

@@ -22,16 +22,15 @@ export default function ContestViewPage() {
 
     async function load() {
       try {
-        // Details endpoint
-        const data = await apiFetch(`/api/contests/${id}/details`);
+        // Fetch DTO (has registration status) and details (has problems) in parallel
+        const [dto, details] = await Promise.all([
+          apiFetch(`/api/contests/${id}`),
+          apiFetch(`/api/contests/${id}/details`),
+        ]);
         if (cancelled) return;
 
-        setContest(data);
-
-        // Try common keys for "registered"
-        const registered =
-          !!(data?.isRegistered ?? data?.registered ?? data?.userRegistered);
-        setIsRegistered(registered);
+        setContest(details);
+        setIsRegistered(!!dto.registered);
 
         setLoading(false);
       } catch (e) {
@@ -92,7 +91,7 @@ export default function ContestViewPage() {
           ) : !hasEnded ? (
             <div className="text-sm">
               <div className="font-medium mb-1">Ends in</div>
-              <CountdownTimer startTime={endTime} />
+              <CountdownTimer startTime={endTime} expiredText="Contest Ended!" />
             </div>
           ) : (
             <div className="text-sm opacity-80">Contest ended</div>

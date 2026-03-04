@@ -53,6 +53,7 @@ export default function ContestCard({ contest }) {
         ) : (
           <CountdownTimer
             startTime={hasStarted ? new Date(endMs) : new Date(startMs)}
+            expiredText={hasStarted ? "Contest Ended!" : "Contest Started!"}
           />
         )}
       </div>

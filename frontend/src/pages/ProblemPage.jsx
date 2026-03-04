@@ -49,7 +49,7 @@ export default function ProblemPage() {
                 <h1 className="text-xl sm:text-2xl font-bold">{problem.title}</h1>
                 <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-6 mt-2 text-xs sm:text-sm text-gray-700 themed-text">
                   <span>Time Limit: {problem.timeLimit} ms</span>
-                  <span>Memory Limit: {problem.memoryLimit / 1000} MB</span>
+                  <span>Memory Limit: {Math.round(problem.memoryLimit / 1024)} MB</span>
                 </div>
               </Card>
 
@@ -96,7 +96,7 @@ export default function ProblemPage() {
                 <h1 className="text-2xl xl:text-3xl font-bold">{problem.title}</h1>
                 <div className="flex justify-center gap-6 mt-2 text-sm text-gray-700 themed-text">
                   <span>Time Limit: {problem.timeLimit} ms</span>
-                  <span>Memory Limit: {problem.memoryLimit / 1000} MB</span>
+                  <span>Memory Limit: {Math.round(problem.memoryLimit / 1024)} MB</span>
                 </div>
               </Card>
 

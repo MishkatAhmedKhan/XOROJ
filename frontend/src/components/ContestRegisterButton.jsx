@@ -17,10 +17,10 @@ export default function ContestRegisterButton({ contestId, initialStatus }) {
         method: "POST",
       });
 
-      if (res.success) {
+      if (res) {
         setRegistered(true);
       } else {
-        setError(res.message || "Failed to register");
+        setError("Failed to register");
       }
     } catch (err) {
       console.error(err);

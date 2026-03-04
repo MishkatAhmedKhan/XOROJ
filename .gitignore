@@ -1,4 +1,10 @@
 *.code-workspace
 .vscode/
 
+# Environment files (contain secrets)
+.env
+.env.*
+
+# Uploads and submissions
 ./uploads
+./submissions
