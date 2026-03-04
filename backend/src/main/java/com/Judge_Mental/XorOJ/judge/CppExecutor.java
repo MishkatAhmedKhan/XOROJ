@@ -229,13 +229,6 @@ public class CppExecutor {
                 return classifyNonZero("Main solution", compileMain, timeLimitMs, memoryKB);
             }
 
-            // Run main solution to get expected output
-            RunResult mainRun = runExe(mainExe, inputPath, timeLimitMs, memoryKB);
-            if (mainRun.exitCode != 0) {
-                return classifyNonZero("Main solution", mainRun, timeLimitMs, memoryKB);
-            }
-            String expected = mainRun.stdout.trim();
-
             // Compile candidate
             Path candExe = workDir.resolve("candidate" + EXE_SUFFIX);
             RunResult compileCand = compile(candidate, candExe);
@@ -243,26 +236,59 @@ public class CppExecutor {
                 return classifyNonZero("Submission", compileCand, timeLimitMs, memoryKB);
             }
 
-            // Run candidate
-            RunResult candRun = runExe(candExe, inputPath, timeLimitMs, memoryKB);
-            if (candRun.exitCode != 0) {
-                return classifyNonZero("Submission", candRun, timeLimitMs, memoryKB);
-            }
-
-            String actual = candRun.stdout.trim();
-            if (Objects.equals(actual, expected)) {
-                return new JudgeVerdict(SubmissionStatus.ACCEPTED,
-                        "Time: " + candRun.timeUsedMillis + "ms, Memory: "
-                                + candRun.memoryUsedKB + "KB",
-                        candRun.timeUsedMillis, candRun.memoryUsedKB);
-            } else {
-                return new JudgeVerdict(SubmissionStatus.WRONG_ANSWER,
-                        "Expected output and actual output differ",
-                        candRun.timeUsedMillis, candRun.memoryUsedKB);
-            }
+            return judgeWithPrecompiledExes(mainExe, candExe, inputPath, timeLimitMs, memoryKB);
         } finally {
             deleteDirQuietly(workDir);
         }
+    }
+
+    /**
+     * Judge using pre-compiled executables (no compilation step).
+     * Used for batch judging where compilation happens once upfront.
+     */
+    public JudgeVerdict judgeWithPrecompiledExes(Path mainExe, Path candExe,
+                                          Path inputPath, int timeLimitMs,
+                                          int memoryKB)
+            throws IOException, InterruptedException {
+        // Run main solution to get expected output
+        RunResult mainRun = runExe(mainExe, inputPath, timeLimitMs, memoryKB);
+        if (mainRun.exitCode != 0) {
+            return classifyNonZero("Main solution", mainRun, timeLimitMs, memoryKB);
+        }
+        String expected = mainRun.stdout.trim();
+
+        // Run candidate
+        RunResult candRun = runExe(candExe, inputPath, timeLimitMs, memoryKB);
+        if (candRun.exitCode != 0) {
+            return classifyNonZero("Submission", candRun, timeLimitMs, memoryKB);
+        }
+
+        String actual = candRun.stdout.trim();
+        if (Objects.equals(actual, expected)) {
+            return new JudgeVerdict(SubmissionStatus.ACCEPTED,
+                    "Time: " + candRun.timeUsedMillis + "ms, Memory: "
+                            + candRun.memoryUsedKB + "KB",
+                    candRun.timeUsedMillis, candRun.memoryUsedKB);
+        } else {
+            return new JudgeVerdict(SubmissionStatus.WRONG_ANSWER,
+                    "Expected output and actual output differ",
+                    candRun.timeUsedMillis, candRun.memoryUsedKB);
+        }
+    }
+
+    /**
+     * Compile a source file and return the path to the executable.
+     * Returns null and populates the verdict holder if compilation fails.
+     * The caller is responsible for cleaning up the output exe.
+     */
+    public RunResult compileSource(Path sourceFile, Path outputExe)
+            throws IOException, InterruptedException {
+        return compile(sourceFile, outputExe);
+    }
+
+    /** Expose EXE_SUFFIX for callers that need to build exe paths. */
+    public static String getExeSuffix() {
+        return EXE_SUFFIX;
     }
 
     /* ================================================================== */

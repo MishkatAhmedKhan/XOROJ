@@ -48,7 +48,7 @@ public interface ContestRepository extends JpaRepository<Contest, Long> {
       )
       from Contest c join c.problems p where p.id = :problemId
     """)
-    ContestResponseDTO findContestByProblemId(@Param("problemId") Long problemId);
+    List<ContestResponseDTO> findContestsByProblemId(@Param("problemId") Long problemId);
     
     /**
      * Find all contests a user has participated in

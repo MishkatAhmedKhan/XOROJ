@@ -106,12 +106,11 @@ public class SubmissionController {
         Submission savedSubmission = submissionService.createSubmissionFromString(
             submission.code(),
             problemId,
-            0L,
+            null,
             user.getId(),
             submission.language()
         );
         savedSubmission = judgingService.judgeSubmission(savedSubmission);
-        System.out.println("Judged submission with status: " + savedSubmission.getStatus());
         return savedSubmission.getStatus();
     }
 

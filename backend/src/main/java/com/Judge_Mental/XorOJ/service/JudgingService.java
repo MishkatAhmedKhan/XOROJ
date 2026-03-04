@@ -1,9 +1,12 @@
 package com.Judge_Mental.XorOJ.service;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,30 +79,60 @@ public class JudgingService {
             String submissionFilePath = submission.getFilePath();
             Path path = Paths.get(submissionFilePath);
             if (!Files.exists(path)) {
-                System.out.println("Submission file not found: " + submissionFilePath);
                 submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
                 submission.setErrorMessage("Submission file not found: " + submissionFilePath);
+                submission.setScore(0);
                 return submissionRepository.save(submission);
             }
             
             // Get the main solution path
             String mainSolutionPath = problem.getMainSolutionPath();
             if (mainSolutionPath == null || mainSolutionPath.isEmpty()) {
-                System.out.println("No main solution available for problem ID: " + problem.getId());
                 submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
                 submission.setErrorMessage("Problem not configured for judging yet (no main solution)");
+                submission.setScore(0);
                 return submissionRepository.save(submission);
             }
             
             int timeLimitMs = problem.getTimeLimit();
             int memoryLimitKB = problem.getMemoryLimit(); // stored in KB in DB
             
-            // Results storage
-            List<JudgeVerdict> verdicts = new ArrayList<>();
-            
-            // First try to judge with generator files if available
-            List<GeneratorFile> generatorFiles = generatorFileRepository.findByProblemId(problem.getId());
-            if (!generatorFiles.isEmpty()) {
+            // ─── Compile both solutions ONCE ───────────────────────────
+            Path workDir = Files.createTempDirectory("judge-batch-");
+            try {
+                String exeSuffix = CppExecutor.getExeSuffix();
+                
+                // Compile main solution
+                Path mainExe = workDir.resolve("main-solution" + exeSuffix);
+                CppExecutor.RunResult compileMain = cppExecutor.compileSource(
+                        Path.of(mainSolutionPath), mainExe);
+                if (compileMain.exitCode != 0) {
+                    submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
+                    submission.setErrorMessage("Main solution compilation failed — contact problem author");
+                    submission.setScore(0);
+                    return submissionRepository.save(submission);
+                }
+                
+                // Compile candidate (user submission)
+                Path candExe = workDir.resolve("candidate" + exeSuffix);
+                CppExecutor.RunResult compileCand = cppExecutor.compileSource(
+                        Path.of(submissionFilePath), candExe);
+                if (compileCand.exitCode != 0) {
+                    submission.setStatus(SubmissionStatus.COMPILATION_ERROR);
+                    String errMsg = compileCand.stderr;
+                    if (errMsg != null && errMsg.length() > 900) {
+                        errMsg = errMsg.substring(0, 900) + "... (truncated)";
+                    }
+                    submission.setErrorMessage(errMsg);
+                    submission.setScore(0);
+                    return submissionRepository.save(submission);
+                }
+                
+                // ─── Run on all test inputs using pre-compiled exes ────
+                List<JudgeVerdict> verdicts = new ArrayList<>();
+                
+                // Generator-based tests
+                List<GeneratorFile> generatorFiles = generatorFileRepository.findByProblemId(problem.getId());
                 for (GeneratorFile generator : generatorFiles) {
                     JudgeVerdict verdict = cppExecutor.compareWithGenerator(
                             submissionFilePath,
@@ -115,57 +148,56 @@ public class JudgingService {
                     submission.setExecutionTime(executionTime);
                     submission.setMemoryUsed(memoryUsed);
 
-                    // If any test fails with a non-AC status, we can stop judging
                     if (verdict.status != SubmissionStatus.ACCEPTED) {
-                        System.out.println(verdict);
                         submission.setStatus(verdict.status);
                         submission.setErrorMessage(verdict.message);
+                        submission.setScore(0);
                         return submissionRepository.save(submission);
                     }
-                    
                 }
-            }
-            
-            // Then judge with test files if available
-            List<TestFile> testFiles = testFileRepository.findByProblemId(problem.getId());
-            if (!testFiles.isEmpty()) {
+                
+                // Static test files — use pre-compiled exes (no recompilation)
+                List<TestFile> testFiles = testFileRepository.findByProblemId(problem.getId());
                 for (TestFile test : testFiles) {
-                    JudgeVerdict verdict = cppExecutor.compareWithInputFile(
-                            submissionFilePath,
-                            mainSolutionPath,
-                            test.getFilePath(),
+                    JudgeVerdict verdict = cppExecutor.judgeWithPrecompiledExes(
+                            mainExe,
+                            candExe,
+                            Path.of(test.getFilePath()),
                             timeLimitMs,
                             memoryLimitKB
                     );
                     verdicts.add(verdict);
-                    System.out.println(verdict.message);
+                    
                     executionTime = Math.max(executionTime, verdict.timeUsedMillis);
                     memoryUsed = Math.max(memoryUsed, verdict.memoryUsedKB);
                     submission.setExecutionTime(executionTime);
                     submission.setMemoryUsed(memoryUsed);
 
-                    // If any test fails with a non-AC status, we can stop judging
                     if (verdict.status != SubmissionStatus.ACCEPTED) {
-                        System.out.println(verdict);
                         submission.setStatus(verdict.status);
                         submission.setErrorMessage(verdict.message);
+                        submission.setScore(0);
                         return submissionRepository.save(submission);
                     }
-                    
                 }
-            }
-            
-            // If no tests were run at all, it's a configuration error — not ACCEPTED
-            if (verdicts.isEmpty()) {
-                submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
-                submission.setErrorMessage("No test cases configured for this problem");
-                return submissionRepository.save(submission);
-            }
+                
+                // If no tests were run at all, it's a configuration error
+                if (verdicts.isEmpty()) {
+                    submission.setStatus(SubmissionStatus.RUNTIME_ERROR);
+                    submission.setErrorMessage("No test cases configured for this problem");
+                    submission.setScore(0);
+                    return submissionRepository.save(submission);
+                }
 
-            submission.setStatus(SubmissionStatus.ACCEPTED);
-            submission.setErrorMessage(null);
-            
-            return submissionRepository.save(submission);
+                submission.setStatus(SubmissionStatus.ACCEPTED);
+                submission.setErrorMessage(null);
+                submission.setScore(100);
+                
+                return submissionRepository.save(submission);
+            } finally {
+                // Clean up the batch compilation directory
+                deleteDirQuietly(workDir);
+            }
         } catch (Exception e) {
             System.out.println(e);
             // Handle any exceptions
@@ -173,6 +205,27 @@ public class JudgingService {
             submission.setErrorMessage("Error during judging: " + e.getMessage());
             return submissionRepository.save(submission);
         }
+    }
+
+    /** Best-effort recursive delete of a temp directory. */
+    private static void deleteDirQuietly(Path dir) {
+        if (dir == null) return;
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.deleteIfExists(file);
+                    return FileVisitResult.CONTINUE;
+                }
+                @Override
+                public FileVisitResult postVisitDirectory(Path d, IOException exc)
+                        throws IOException {
+                    Files.deleteIfExists(d);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ignored) {}
     }
 
 }

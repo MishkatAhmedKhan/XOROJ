@@ -22,35 +22,34 @@ ON CONFLICT (username) DO NOTHING;
 
 
 -- ============================================================================
--- 2. PROBLEMS (authored by alice=id1, eve=id5, hank=id8)
+-- 2. PROBLEMS (authored by the first registered user — typically the admin/main user)
 -- ============================================================================
 -- Note: We use a DO block to get the actual user IDs and problem IDs dynamically
 
 DO $$
 DECLARE
-    v_alice_id   BIGINT;
-    v_eve_id     BIGINT;
-    v_hank_id    BIGINT;
+    v_main_author BIGINT;
     v_p1 BIGINT; v_p2 BIGINT; v_p3 BIGINT; v_p4 BIGINT; v_p5 BIGINT;
     v_p6 BIGINT; v_p7 BIGINT; v_p8 BIGINT; v_p9 BIGINT; v_p10 BIGINT;
 BEGIN
-    SELECT id INTO v_alice_id FROM users WHERE username = 'alice';
-    SELECT id INTO v_eve_id   FROM users WHERE username = 'eve';
-    SELECT id INTO v_hank_id  FROM users WHERE username = 'hank';
+    -- Use the FIRST registered user as the author so they appear in the
+    -- logged-in user's "My Problems" dropdown when adding to contests.
+    SELECT id INTO v_main_author FROM users ORDER BY id LIMIT 1;
 
-    -- Insert 10 problems
-    INSERT INTO problems (title, description, input_format, output_format, sample_input, sample_output, difficulty_rating, solve_count, time_limit, memory_limit, status, author_id)
+    -- Insert 10 problems (with problem_num for global ordering)
+    -- NOTE: memory_limit is stored in KB (256 MB = 262144 KB, 512 MB = 524288 KB)
+    INSERT INTO problems (title, description, input_format, output_format, sample_input, sample_output, difficulty_rating, solve_count, time_limit, memory_limit, status, author_id, problem_num)
     VALUES
-      ('Two Sum',           'Given an array of integers and a target, find two numbers that add up to the target.', 'First line: n and target. Second line: n integers.', 'Two indices (1-indexed).', '4 9\n2 7 11 15', '1 2', 800, 0, 1000, 256, 'public', v_alice_id),
-      ('Binary Search',     'Implement binary search on a sorted array.', 'First line: n and target. Second line: n sorted integers.', 'Index of target or -1.', '5 3\n1 2 3 4 5', '3', 900, 0, 1000, 256, 'public', v_alice_id),
-      ('DFS Traversal',     'Perform depth-first search on a graph and output visited nodes.', 'First line: n m (nodes, edges). Next m lines: u v.', 'Space-separated visited nodes from node 1.', '4 3\n1 2\n1 3\n3 4', '1 2 3 4', 1200, 0, 2000, 512, 'public', v_alice_id),
-      ('Knapsack Problem',  'Classic 0/1 knapsack. Maximize value within weight limit.', 'First line: n W. Next n lines: weight value.', 'Maximum value.', '3 50\n10 60\n20 100\n30 120', '220', 1500, 0, 2000, 512, 'public', v_eve_id),
-      ('Shortest Path',     'Find the shortest path in a weighted graph using Dijkstra.', 'First line: n m. Next m lines: u v w. Last line: source dest.', 'Shortest distance.', '4 5\n1 2 1\n1 3 4\n2 3 2\n2 4 6\n3 4 3\n1 4', '6', 1800, 0, 3000, 512, 'public', v_eve_id),
-      ('String Matching',   'Count occurrences of a pattern in text using KMP algorithm.', 'First line: text. Second line: pattern.', 'Number of occurrences.', 'ababababab\nabab', '4', 1600, 0, 1000, 256, 'public', v_hank_id),
-      ('Segment Tree',      'Range sum query with point updates.', 'First line: n q. Second line: n integers. Next q lines: type l r or type i v.', 'Answer for each query.', '5 3\n1 2 3 4 5\n1 2 4\n2 3 10\n1 2 4', '9\n17', 2200, 0, 2000, 512, 'public', v_hank_id),
-      ('Matrix Exponent',   'Compute the n-th Fibonacci number using matrix exponentiation.', 'Single integer n.', 'n-th Fibonacci number mod 1e9+7.', '10', '55', 2500, 0, 1000, 256, 'public', v_eve_id),
-      ('Convex Hull',       'Find the convex hull of a set of 2D points.', 'First line: n. Next n lines: x y coordinates.', 'Number of points on convex hull.', '5\n0 0\n1 1\n2 2\n0 2\n2 0', '4', 2800, 0, 2000, 512, 'public', v_alice_id),
-      ('Network Flow',      'Find maximum flow in a flow network.', 'First line: n m. Next m lines: u v capacity. Source=1, sink=n.', 'Maximum flow value.', '4 5\n1 2 3\n1 3 2\n2 3 1\n2 4 3\n3 4 2', '5', 3200, 0, 3000, 1024, 'public', v_hank_id)
+      ('Two Sum',           'Given an array of integers and a target, find two numbers that add up to the target.', 'First line: n and target. Second line: n integers.', 'Two indices (1-indexed).', '4 9\n2 7 11 15', '1 2', 800, 0, 1000, 262144, 'public', v_main_author, 1),
+      ('Binary Search',     'Implement binary search on a sorted array.', 'First line: n and target. Second line: n sorted integers.', 'Index of target or -1.', '5 3\n1 2 3 4 5', '3', 900, 0, 1000, 262144, 'public', v_main_author, 2),
+      ('DFS Traversal',     'Perform depth-first search on a graph and output visited nodes.', 'First line: n m (nodes, edges). Next m lines: u v.', 'Space-separated visited nodes from node 1.', '4 3\n1 2\n1 3\n3 4', '1 2 3 4', 1200, 0, 2000, 524288, 'public', v_main_author, 3),
+      ('Knapsack Problem',  'Classic 0/1 knapsack. Maximize value within weight limit.', 'First line: n W. Next n lines: weight value.', 'Maximum value.', '3 50\n10 60\n20 100\n30 120', '220', 1500, 0, 2000, 524288, 'public', v_main_author, 4),
+      ('Shortest Path',     'Find the shortest path in a weighted graph using Dijkstra.', 'First line: n m. Next m lines: u v w. Last line: source dest.', 'Shortest distance.', '4 5\n1 2 1\n1 3 4\n2 3 2\n2 4 6\n3 4 3\n1 4', '6', 1800, 0, 3000, 524288, 'public', v_main_author, 5),
+      ('String Matching',   'Count occurrences of a pattern in text using KMP algorithm.', 'First line: text. Second line: pattern.', 'Number of occurrences.', 'ababababab\nabab', '4', 1600, 0, 1000, 262144, 'public', v_main_author, 6),
+      ('Segment Tree',      'Range sum query with point updates.', 'First line: n q. Second line: n integers. Next q lines: type l r or type i v.', 'Answer for each query.', '5 3\n1 2 3 4 5\n1 2 4\n2 3 10\n1 2 4', '9\n17', 2200, 0, 2000, 524288, 'public', v_main_author, 7),
+      ('Matrix Exponent',   'Compute the n-th Fibonacci number using matrix exponentiation.', 'Single integer n.', 'n-th Fibonacci number mod 1e9+7.', '10', '55', 2500, 0, 1000, 262144, 'public', v_main_author, 8),
+      ('Convex Hull',       'Find the convex hull of a set of 2D points.', 'First line: n. Next n lines: x y coordinates.', 'Number of points on convex hull.', '5\n0 0\n1 1\n2 2\n0 2\n2 0', '4', 2800, 0, 2000, 524288, 'public', v_main_author, 9),
+      ('Network Flow',      'Find maximum flow in a flow network.', 'First line: n m. Next m lines: u v capacity. Source=1, sink=n.', 'Maximum flow value.', '4 5\n1 2 3\n1 3 2\n2 3 1\n2 4 3\n3 4 2', '5', 3200, 0, 3000, 1048576, 'public', v_main_author, 10)
     ON CONFLICT (title) DO NOTHING;
 
     -- Get problem IDs
@@ -82,7 +81,7 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     -- ============================================================================
-    -- 4. CONTESTS
+    -- 4. CONTESTS (all authored by the main user)
     -- ============================================================================
     -- Contest 1: Past contest (ENDED)
     INSERT INTO contest (title, description, start_time, end_time, author_id, duration, status)
@@ -91,7 +90,7 @@ BEGIN
       'First competitive programming round featuring easy-medium problems.',
       NOW() - INTERVAL '30 days',
       NOW() - INTERVAL '30 days' + INTERVAL '2 hours',
-      v_alice_id, 120, 'ENDED'
+      v_main_author, 120, 'ENDED'
     ) ON CONFLICT DO NOTHING;
 
     -- Contest 2: Past contest (ENDED)
@@ -101,7 +100,7 @@ BEGIN
       'Second round with harder graph and DP problems.',
       NOW() - INTERVAL '15 days',
       NOW() - INTERVAL '15 days' + INTERVAL '3 hours',
-      v_eve_id, 180, 'ENDED'
+      v_main_author, 180, 'ENDED'
     ) ON CONFLICT DO NOTHING;
 
     -- Contest 3: Currently running (RUNNING)
@@ -111,7 +110,7 @@ BEGIN
       'Weekly challenge covering various topics.',
       NOW() - INTERVAL '1 hour',
       NOW() + INTERVAL '4 hours',
-      v_hank_id, 300, 'RUNNING'
+      v_main_author, 300, 'RUNNING'
     ) ON CONFLICT DO NOTHING;
 
     -- Contest 4: Upcoming
@@ -121,7 +120,7 @@ BEGIN
       'Advanced problems in geometry, flows, and segment trees.',
       NOW() + INTERVAL '7 days',
       NOW() + INTERVAL '7 days' + INTERVAL '5 hours',
-      v_alice_id, 300, 'UPCOMING'
+      v_main_author, 300, 'UPCOMING'
     ) ON CONFLICT DO NOTHING;
 
 END $$;
@@ -192,7 +191,7 @@ BEGIN
         SELECT id INTO v_ivy     FROM users WHERE username = 'ivy';
         SELECT id INTO v_jack    FROM users WHERE username = 'jack';
 
-        -- Round #1 participants (most users)
+        -- Round #1 participants (most users + main author)
         INSERT INTO contest_participants (contest_id, user_id) VALUES
           (v_c1, v_bob), (v_c1, v_charlie), (v_c1, v_diana),
           (v_c1, v_frank), (v_c1, v_grace), (v_c1, v_ivy), (v_c1, v_jack)
@@ -204,7 +203,7 @@ BEGIN
           (v_c2, v_eve), (v_c2, v_frank), (v_c2, v_jack)
         ON CONFLICT DO NOTHING;
 
-        -- Weekly Challenge participants (ongoing)
+        -- Weekly Challenge participants (ongoing) — include main author
         INSERT INTO contest_participants (contest_id, user_id) VALUES
           (v_c3, v_bob), (v_c3, v_charlie), (v_c3, v_diana),
           (v_c3, v_frank), (v_c3, v_grace), (v_c3, v_ivy)
@@ -214,6 +213,14 @@ BEGIN
         INSERT INTO contest_participants (contest_id, user_id) VALUES
           (v_c4, v_bob), (v_c4, v_charlie), (v_c4, v_diana),
           (v_c4, v_frank), (v_c4, v_ivy), (v_c4, v_jack)
+        ON CONFLICT DO NOTHING;
+
+        -- Also add the main author as participant in all contests
+        INSERT INTO contest_participants (contest_id, user_id) VALUES
+          (v_c1, (SELECT id FROM users ORDER BY id LIMIT 1)),
+          (v_c2, (SELECT id FROM users ORDER BY id LIMIT 1)),
+          (v_c3, (SELECT id FROM users ORDER BY id LIMIT 1)),
+          (v_c4, (SELECT id FROM users ORDER BY id LIMIT 1))
         ON CONFLICT DO NOTHING;
     END;
 END $$;
@@ -421,14 +428,114 @@ END $$;
 
 
 -- ============================================================================
--- 8. REFRESH MATERIALIZED VIEW
+-- 8. STANDINGS SNAPSHOTS (pre-built ICPC-style standings for ended contests)
+-- This allows the contest standings page to render immediately without
+-- needing the in-memory ScoreboardService to have processed submissions.
+-- ============================================================================
+DO $$
+DECLARE
+    v_c1 BIGINT; v_c2 BIGINT;
+    v_c1_start TIMESTAMPTZ; v_c1_end TIMESTAMPTZ;
+    v_c2_start TIMESTAMPTZ; v_c2_end TIMESTAMPTZ;
+    v_p1 BIGINT; v_p2 BIGINT; v_p3 BIGINT;
+    v_p4 BIGINT; v_p5 BIGINT; v_p6 BIGINT;
+    v_bob BIGINT; v_charlie BIGINT; v_diana BIGINT;
+    v_frank BIGINT; v_grace BIGINT; v_ivy BIGINT; v_jack BIGINT; v_eve BIGINT;
+    v_json1 TEXT; v_json2 TEXT;
+BEGIN
+    SELECT id, start_time, end_time INTO v_c1, v_c1_start, v_c1_end FROM contest WHERE title = 'XorOJ Round #1';
+    SELECT id, start_time, end_time INTO v_c2, v_c2_start, v_c2_end FROM contest WHERE title = 'XorOJ Round #2';
+
+    SELECT id INTO v_p1 FROM problems WHERE title = 'Two Sum';
+    SELECT id INTO v_p2 FROM problems WHERE title = 'Binary Search';
+    SELECT id INTO v_p3 FROM problems WHERE title = 'DFS Traversal';
+    SELECT id INTO v_p4 FROM problems WHERE title = 'Knapsack Problem';
+    SELECT id INTO v_p5 FROM problems WHERE title = 'Shortest Path';
+    SELECT id INTO v_p6 FROM problems WHERE title = 'String Matching';
+
+    SELECT id INTO v_bob     FROM users WHERE username = 'bob';
+    SELECT id INTO v_charlie FROM users WHERE username = 'charlie';
+    SELECT id INTO v_diana   FROM users WHERE username = 'diana';
+    SELECT id INTO v_frank   FROM users WHERE username = 'frank';
+    SELECT id INTO v_grace   FROM users WHERE username = 'grace';
+    SELECT id INTO v_ivy     FROM users WHERE username = 'ivy';
+    SELECT id INTO v_jack    FROM users WHERE username = 'jack';
+    SELECT id INTO v_eve     FROM users WHERE username = 'eve';
+
+    -- ── Round #1 Standings (problems: Two Sum, Binary Search, DFS) ──
+    -- Based on contest submissions:
+    --   charlie: 3 solved (10+25+70 = 105 min penalty)
+    --   bob:     2 solved (15+35 = 50 min penalty)
+    --   diana:   1 solved (8 min penalty)
+    --   frank, grace, ivy, jack: 0 solved
+    v_json1 := format(
+      '{"contestId":%s,"version":1,"problemIds":[%s,%s,%s],"rows":['
+      || '{"userId":%s,"username":"charlie","solved":3,"penaltyMinutes":105,"cells":{"%s":{"firstSolved":true,"timeFromStartMin":10,"rejections":0},"%s":{"firstSolved":true,"timeFromStartMin":25,"rejections":0},"%s":{"firstSolved":true,"timeFromStartMin":70,"rejections":0}}}'
+      || ',{"userId":%s,"username":"bob","solved":2,"penaltyMinutes":50,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":15,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":35,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":1}}}'
+      || ',{"userId":%s,"username":"diana","solved":1,"penaltyMinutes":8,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":8,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"frank","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"grace","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"ivy","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"jack","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || '],"startEpochMs":%s,"endEpochMs":%s,"nowEpochMs":%s,"status":"ENDED"}',
+      v_c1, v_p1, v_p2, v_p3,
+      v_charlie, v_p1, v_p2, v_p3,
+      v_bob, v_p1, v_p2, v_p3,
+      v_diana, v_p1, v_p2, v_p3,
+      v_frank, v_p1, v_p2, v_p3,
+      v_grace, v_p1, v_p2, v_p3,
+      v_ivy, v_p1, v_p2, v_p3,
+      v_jack, v_p1, v_p2, v_p3,
+      (EXTRACT(EPOCH FROM v_c1_start) * 1000)::BIGINT,
+      (EXTRACT(EPOCH FROM v_c1_end) * 1000)::BIGINT,
+      (EXTRACT(EPOCH FROM v_c1_end) * 1000)::BIGINT
+    );
+
+    -- ── Round #2 Standings (problems: Knapsack, Shortest Path, String Matching) ──
+    -- Based on contest submissions:
+    --   bob:     2 solved (20+80 = 100 min penalty)
+    --   charlie: 1 solved (45 min penalty)
+    --   frank:   1 solved (100 min + 20 penalty for 1 WA = 120 min)
+    --   jack:    1 solved (30 min penalty)
+    --   diana, eve: 0 solved
+    v_json2 := format(
+      '{"contestId":%s,"version":1,"problemIds":[%s,%s,%s],"rows":['
+      || '{"userId":%s,"username":"bob","solved":2,"penaltyMinutes":100,"cells":{"%s":{"firstSolved":true,"timeFromStartMin":20,"rejections":0},"%s":{"firstSolved":true,"timeFromStartMin":80,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"charlie","solved":1,"penaltyMinutes":45,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":45,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"frank","solved":1,"penaltyMinutes":120,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":100,"rejections":1},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":1},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"jack","solved":1,"penaltyMinutes":30,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":30,"rejections":0}}}'
+      || ',{"userId":%s,"username":"diana","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || ',{"userId":%s,"username":"eve","solved":0,"penaltyMinutes":0,"cells":{"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0},"%s":{"firstSolved":false,"timeFromStartMin":null,"rejections":0}}}'
+      || '],"startEpochMs":%s,"endEpochMs":%s,"nowEpochMs":%s,"status":"ENDED"}',
+      v_c2, v_p4, v_p5, v_p6,
+      v_bob, v_p4, v_p5, v_p6,
+      v_charlie, v_p4, v_p5, v_p6,
+      v_frank, v_p4, v_p5, v_p6,
+      v_jack, v_p4, v_p5, v_p6,
+      v_diana, v_p4, v_p5, v_p6,
+      v_eve, v_p4, v_p5, v_p6,
+      (EXTRACT(EPOCH FROM v_c2_start) * 1000)::BIGINT,
+      (EXTRACT(EPOCH FROM v_c2_end) * 1000)::BIGINT,
+      (EXTRACT(EPOCH FROM v_c2_end) * 1000)::BIGINT
+    );
+
+    -- Delete any existing snapshots for these contests and insert fresh ones
+    DELETE FROM standings_snapshot WHERE contest_id IN (v_c1, v_c2);
+    INSERT INTO standings_snapshot (contest_id, version, payload_json)
+    VALUES (v_c1, 1, v_json1), (v_c2, 1, v_json2)
+    ON CONFLICT (contest_id) DO UPDATE SET payload_json = EXCLUDED.payload_json, version = EXCLUDED.version;
+END $$;
+
+
+-- ============================================================================
+-- 9. REFRESH MATERIALIZED VIEW
 -- Must be done after all data is inserted so leaderboard/stats reflect data
 -- ============================================================================
 REFRESH MATERIALIZED VIEW mv_user_statistics;
 
 
 -- ============================================================================
--- 9. INITIALIZE REFRESH TRACKER
+-- 10. INITIALIZE REFRESH TRACKER
 -- ============================================================================
 INSERT INTO mv_refresh_tracker (view_name, last_refresh)
 VALUES ('mv_user_statistics', NOW())
@@ -436,7 +543,7 @@ ON CONFLICT (view_name) DO UPDATE SET last_refresh = NOW();
 
 
 -- ============================================================================
--- 10. VERIFICATION QUERIES (optional — uncomment to check data)
+-- 11. VERIFICATION QUERIES (optional — uncomment to check data)
 -- ============================================================================
 
 -- Check user count

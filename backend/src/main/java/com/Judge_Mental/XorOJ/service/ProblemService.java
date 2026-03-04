@@ -36,11 +36,13 @@ public class ProblemService {
 
     public Problem findProblemById(Long id) {
         Problem problem = problemRepo.findProblemById(id).orElse(null);
-        if(problem == null){
+        if (problem == null) {
             return null;
         }
-        ContestResponseDTO contest = contestRepo.findContestByProblemId(id);
-        if(contest != null && !contest.getStartTime().isBefore(LocalDateTime.now())) {
+        // Only hide if the problem is explicitly non-public (e.g. "draft", "private").
+        // Public problems are always visible even if they belong to a future contest —
+        // contest-level access control is enforced separately in ContestController.
+        if (problem.getStatus() != null && !"public".equalsIgnoreCase(problem.getStatus())) {
             return null;
         }
         return problem;
@@ -91,8 +93,8 @@ public class ProblemService {
         return problemRepo.save(problem);
     }
 
-    public ContestResponseDTO getContestByProblemId(Long problemId) {
-        return contestRepo.findContestByProblemId(problemId);
+    public List<ContestResponseDTO> getContestsByProblemId(Long problemId) {
+        return contestRepo.findContestsByProblemId(problemId);
     }
 
     // Edit page

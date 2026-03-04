@@ -30,7 +30,7 @@ public class Contest {
 
     private Long authorId;
 
-    @OneToMany
+    @ManyToMany
     @JoinTable(
         name = "contest_problems",
         joinColumns = @JoinColumn(name = "contest_id"),
