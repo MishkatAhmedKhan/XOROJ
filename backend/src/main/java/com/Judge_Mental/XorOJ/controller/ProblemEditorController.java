@@ -2,6 +2,7 @@ package com.Judge_Mental.XorOJ.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,5 +181,43 @@ public class ProblemEditorController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    // ---- Publish/Unpublish endpoints ----
+
+    @GetMapping("/publish-status")
+    public ResponseEntity<Map<String, Object>> getPublishStatus(
+            @PathVariable Long problemId,
+            @AuthenticationPrincipal(expression = "user") XUser user) {
+        if (!problemService.authorHaveAccess(user.getId(), problemId)) {
+            return ResponseEntity.status(403).body(null);
+        }
+        Map<String, Object> status = problemService.getPublishStatus(problemId);
+        return status != null ? ResponseEntity.ok(status) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/publish")
+    public ResponseEntity<Map<String, Object>> publishProblem(
+            @PathVariable Long problemId,
+            @AuthenticationPrincipal(expression = "user") XUser user) {
+        if (!problemService.authorHaveAccess(user.getId(), problemId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "No access"));
+        }
+        if (!problemService.isPublishable(problemId)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Cannot publish: problem is used in a contest"));
+        }
+        boolean ok = problemService.publishProblem(problemId, user.getId());
+        return ok ? ResponseEntity.ok(Map.of("published", true)) : ResponseEntity.badRequest().body(Map.of("error", "Failed to publish"));
+    }
+
+    @PostMapping("/unpublish")
+    public ResponseEntity<Map<String, Object>> unpublishProblem(
+            @PathVariable Long problemId,
+            @AuthenticationPrincipal(expression = "user") XUser user) {
+        if (!problemService.authorHaveAccess(user.getId(), problemId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "No access"));
+        }
+        boolean ok = problemService.unpublishProblem(problemId, user.getId());
+        return ok ? ResponseEntity.ok(Map.of("published", false)) : ResponseEntity.badRequest().body(Map.of("error", "Failed to unpublish"));
     }
 }

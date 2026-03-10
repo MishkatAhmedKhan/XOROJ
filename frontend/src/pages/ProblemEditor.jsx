@@ -19,6 +19,8 @@ export default function ProblemEditor() {
 
   const [problemData, setProblemData] = useState(initialData);
   const [loading, setLoading] = useState(!initialData);
+  const [publishStatus, setPublishStatus] = useState(null);
+  const [publishLoading, setPublishLoading] = useState(false);
 
   // Fetch problem data if not present
   useEffect(() => {
@@ -45,28 +47,96 @@ export default function ProblemEditor() {
     };
   }, [problemId, initialData]);
 
+  // Fetch publish status
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPublishStatus = async () => {
+      try {
+        const status = await apiFetch(`/api/edit/problems/${problemId}/publish-status`);
+        if (!cancelled) setPublishStatus(status);
+      } catch (err) {
+        console.error("Failed to fetch publish status", err);
+      }
+    };
+    fetchPublishStatus();
+    return () => { cancelled = true; };
+  }, [problemId]);
+
+  const handlePublish = async () => {
+    setPublishLoading(true);
+    try {
+      await apiFetch(`/api/edit/problems/${problemId}/publish`, { method: "POST" });
+      setPublishStatus({ ...publishStatus, published: true });
+    } catch (err) {
+      alert(err.message || "Failed to publish");
+    } finally {
+      setPublishLoading(false);
+    }
+  };
+
+  const handleUnpublish = async () => {
+    setPublishLoading(true);
+    try {
+      await apiFetch(`/api/edit/problems/${problemId}/unpublish`, { method: "POST" });
+      setPublishStatus({ ...publishStatus, published: false });
+    } catch (err) {
+      alert(err.message || "Failed to unpublish");
+    } finally {
+      setPublishLoading(false);
+    }
+  };
+
   if (loading || !problemData) {
     return <p className="p-6">Loading problem data...</p>;
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">
-        {`Problem Title: ${problemData.title}`}
-      </h1>
+    <div className="problem-editor-page">
+      {/* Header */}
+      <div className="problem-editor-header">
+        <div className="problem-editor-title-row">
+          <h1 className="problem-editor-title">{problemData.title}</h1>
+          <div className="problem-editor-actions">
+            {publishStatus && (
+              <>
+                {publishStatus.inContest && (
+                  <span className="publish-badge publish-badge-contest" title="This problem is used in a contest and cannot be published separately">
+                    🏆 In Contest
+                  </span>
+                )}
+                {publishStatus.published ? (
+                  <button
+                    onClick={handleUnpublish}
+                    disabled={publishLoading}
+                    className="publish-btn publish-btn-unpublish"
+                  >
+                    {publishLoading ? "..." : "Unpublish"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handlePublish}
+                    disabled={publishLoading || publishStatus.inContest}
+                    className="publish-btn publish-btn-publish"
+                    title={publishStatus.inContest ? "Cannot publish: problem is used in a contest" : "Make this problem visible in the problemset"}
+                  >
+                    {publishLoading ? "..." : "Publish"}
+                  </button>
+                )}
+                <span className={`publish-status-dot ${publishStatus.published ? "published" : publishStatus.inContest ? "in-contest" : "draft"}`} />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Navigation Tabs */}
-      <nav className="flex gap-4 border-b border-gray-200 mb-6 overflow-x-auto">
+      <nav className="problem-editor-tabs">
         {tabs.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              `px-3 py-2 -mb-px border-b-2 text-sm font-medium ${
-                isActive
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300"
-              }`
+              `problem-editor-tab ${isActive ? "active" : ""}`
             }
           >
             {tab.name}
@@ -75,7 +145,6 @@ export default function ProblemEditor() {
       </nav>
 
       {/* Outlet renders child tab component */}
-      {/* Add key so child remounts whenever problemData changes */}
       <Outlet key={problemData.id} context={{ problemData, setProblemData }} />
     </div>
   );

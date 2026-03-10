@@ -77,86 +77,73 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = () => setMobileOpen(false);
 
+  const navLinks = [
+    { to: "/problems", label: "Problems" },
+    { to: "/contests", label: "Contests" },
+    { to: "/author", label: "Author" },
+    { to: "/blogs", label: "Blogs" },
+    { to: "/leaderboard", label: "Leaderboard" },
+  ];
+
   return (
-    <header className="navbar px-4 lg:px-6 sticky top-0 z-40">
+    <header className="navbar px-4 lg:px-6 sticky top-0 z-40" style={{
+      background: "var(--navbar-bg)",
+      backdropFilter: "blur(12px) saturate(180%)",
+      WebkitBackdropFilter: "blur(12px) saturate(180%)",
+      borderBottom: "1px solid var(--navbar-border)",
+    }}>
       <div className="w-full flex items-center justify-between">
         {/* Left: brand */}
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center text-2xl lg:text-3xl font-bold">
+          <Link to="/" className="flex items-center text-2xl lg:text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
             <img src={logo} alt="XorOJ" className="h-7 w-7 lg:h-8 lg:w-8 mr-2" />
-            XorOJ
+            <span>Xor</span><span style={{ color: "var(--accent-500)" }}>OJ</span>
           </Link>
 
-          {/* Desktop nav: visible lg+ */}
-          <nav className="hidden lg:flex items-center gap-6 ml-4">
-            <NavLink
-              to="/problems"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Problems
-            </NavLink>
-            <NavLink
-              to="/contests"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Contests
-            </NavLink>
-            {/* Author goes to /author */}
-            <NavLink
-              to="/author"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Author
-            </NavLink>
-            <NavLink
-              to="/blogs"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Blogs
-            </NavLink>
-            <NavLink
-              to="/leaderboard"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Leaderboard
-            </NavLink>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `link link-hover ${isActive ? "font-semibold" : "opacity-90"}`
-              }
-            >
-              Dashboard
-            </NavLink>
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1 ml-4">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
+                  ${isActive
+                    ? "font-semibold"
+                    : "opacity-80 hover:opacity-100"}`
+                }
+                style={({ isActive }) => ({
+                  color: isActive ? "var(--accent-500)" : "var(--text-primary)",
+                  background: isActive ? "var(--accent-50)" : "transparent",
+                })}
+              >
+                {link.label}
+              </NavLink>
+            ))}
           </nav>
         </div>
 
-        {/* Right: theme + user + hamburger */}
+        {/* Right */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Theme toggle */}
+          {/* Theme toggle - mobile */}
           <button
-            className="lg:hidden p-2 rounded-btn"
+            className="lg:hidden p-2 rounded-lg"
             onClick={toggleTheme}
             aria-label="Toggle theme"
             title="Toggle theme"
+            style={{ color: "var(--text-primary)" }}
           >
             {theme === "light" ? "🌙" : "☀️"}
           </button>
-          <button className="btn btn-primary hidden lg:inline-flex" onClick={toggleTheme}>
-            {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+          {/* Theme toggle - desktop */}
+          <button
+            className="btn btn-sm hidden lg:inline-flex"
+            onClick={toggleTheme}
+          >
+            {theme === "light" ? "🌙 Dark" : "☀️ Light"}
           </button>
 
-          {/* User menu: hide on mobile; show only lg+ */}
+          {/* User menu */}
           {username ? (
             <div className="dropdown dropdown-end hidden lg:block">
               <div tabIndex={0} role="button" className="btn btn-sm">
@@ -164,24 +151,29 @@ export default function Header() {
               </div>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow border border-base-200"
+                className="dropdown-content menu rounded-xl z-50 w-52 p-2 shadow-lg"
+                style={{
+                  background: "var(--card-bg)",
+                  border: "1px solid var(--card-border)",
+                }}
               >
-                <li><Link to={`/profile/${username}`}>Profile</Link></li>
-                <li><button onClick={handleLogout}>Logout</button></li>
+                <li><Link to={`/profile/${username}`} style={{ color: "var(--text-primary)" }}>Profile</Link></li>
+                <li><button onClick={handleLogout} style={{ color: "var(--text-primary)" }}>Logout</button></li>
               </ul>
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
               <Link to="/login" className="btn btn-sm">Login</Link>
-              <Link to="/register" className="btn btn-sm btn-outline">Register</Link>
+              <Link to="/register" className="btn btn-sm btn-primary">Register</Link>
             </div>
           )}
 
-          {/* Hamburger (mobile only) */}
+          {/* Hamburger */}
           <button
             className="lg:hidden p-2"
             onClick={() => setMobileOpen((s) => !s)}
             aria-label="Open menu"
+            style={{ color: "var(--text-primary)" }}
           >
             <span className="block w-6 h-0.5 bg-current mb-1" />
             <span className="block w-6 h-0.5 bg-current mb-1" />
@@ -194,34 +186,42 @@ export default function Header() {
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={closeMobile} aria-hidden="true" />
-          <div className="absolute top-0 right-0 h-full w-72 max-w-[85%] bg-base-100 shadow-xl p-6 flex flex-col gap-4">
-            {/* Top row: avatar, close */}
+          <div className="absolute top-0 right-0 h-full w-72 max-w-[85%] shadow-xl p-6 flex flex-col gap-4"
+            style={{ background: "var(--card-bg)" }}>
             <div className="flex items-center justify-between mb-2">
-              <div className="avatar">
-                <div className="w-10 h-10 rounded-full ring ring-offset-base-100 ring-offset-2 overflow-hidden">
-                  {profile?.avatarUrl ? <img src={profile.avatarUrl} alt="User avatar" /> : <img src={logo} alt="User avatar" />}
-                </div>
+              <div className="flex items-center gap-2">
+                <img src={logo} alt="XorOJ" className="w-8 h-8 rounded-full" />
+                <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{displayName}</span>
               </div>
-              <button className="btn btn-ghost btn-sm" onClick={closeMobile} aria-label="Close menu">✕</button>
+              <button className="btn btn-ghost btn-sm" onClick={closeMobile} aria-label="Close menu"
+                style={{ color: "var(--text-primary)" }}>✕</button>
             </div>
 
-            {/* Nav links */}
-            <NavLink to="/problems" onClick={closeMobile} className="link link-hover text-lg">Problems</NavLink>
-            <NavLink to="/contests" onClick={closeMobile} className="link link-hover text-lg">Contests</NavLink>
-            <NavLink to="/author" onClick={closeMobile} className="link link-hover text-lg">Author</NavLink>
-            <NavLink to="/blogs" onClick={closeMobile} className="link link-hover text-lg">Blogs</NavLink>
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                onClick={closeMobile}
+                className="text-lg py-1"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {link.label}
+              </NavLink>
+            ))}
 
-            <div className="divider my-2" />
+            <div style={{ borderTop: "1px solid var(--border-primary)", margin: "0.5rem 0" }} />
 
             {username ? (
               <>
-                <Link to={`/profile/${username}`} onClick={closeMobile} className="link link-hover text-lg">Profile</Link>
-                <button onClick={() => { closeMobile(); handleLogout(); }} className="link link-hover text-left text-lg">Logout</button>
+                <Link to={`/profile/${username}`} onClick={closeMobile}
+                  className="text-lg py-1" style={{ color: "var(--text-primary)" }}>Profile</Link>
+                <button onClick={() => { closeMobile(); handleLogout(); }}
+                  className="text-left text-lg py-1" style={{ color: "var(--text-primary)" }}>Logout</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={closeMobile} className="btn btn-sm btn-primary">Login</Link>
-                <Link to="/register" onClick={closeMobile} className="btn btn-sm btn-outline">Register</Link>
+                <Link to="/login" onClick={closeMobile} className="btn btn-primary btn-sm">Login</Link>
+                <Link to="/register" onClick={closeMobile} className="btn btn-sm">Register</Link>
               </>
             )}
 

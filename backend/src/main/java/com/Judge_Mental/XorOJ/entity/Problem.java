@@ -62,6 +62,9 @@ public class Problem {
 
     private String status = "public";
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean published = false;
+
     @ElementCollection
     @CollectionTable(name = "problem_tags", joinColumns = @JoinColumn(name = "problem_id"))
     private List<String> tags;

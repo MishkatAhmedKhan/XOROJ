@@ -1,6 +1,6 @@
 // src/pages/Submissions.jsx
 import { useEffect, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext, useParams, Link } from "react-router-dom";
 import { apiFetch } from "../../api/client.js";
 
 export default function Submissions() {
@@ -51,16 +51,19 @@ export default function Submissions() {
           <tbody className="divide-y divide-gray-100">
             {paginated.map((s) => (
               <tr key={s.id}>
-                <td className="px-4 py-2">{s.problemId}</td>
+                <td className="px-4 py-2">
+                  <Link to={`/problems/${s.problemId}`} className="text-blue-500 hover:underline">
+                    {s.problemTitle || `Problem ${s.problemId}`}
+                  </Link>
+                </td>
                 <td className="px-4 py-2">{s.language}</td>
                 <td
-                  className={`px-4 py-2 font-medium ${
-                    s.status === "ACCEPTED"
+                  className={`px-4 py-2 font-medium ${s.status === "ACCEPTED"
                       ? "text-green-600"
                       : s.status === "WRONG_ANSWER"
-                      ? "text-red-600"
-                      : "text-yellow-600"
-                  }`}
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
                 >
                   {s.status}
                 </td>

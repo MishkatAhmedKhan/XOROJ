@@ -51,7 +51,7 @@ n = int(data[0])
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const [showExtras, setShowExtras] = useState(true);
+  const [verdict, setVerdict] = useState(null); // separate verdict state
 
   // Keep parent state in sync if provided
   useEffect(() => {
@@ -77,8 +77,9 @@ n = int(data[0])
   const normalizeResult = (d) => ({
     stdout: d?.stdout ?? d?.out ?? "",
     stderr: d?.stderr ?? d?.error ?? "",
-    time: d?.timeused ?? d?.timeUsedMillis ?? d?.time_ms ?? "",
-    memory: d?.memoryused ?? d?.memoryUsedKB ?? d?.memory_kb ?? "",
+    time: d?.timeUsedMillis ?? d?.timeused ?? d?.time_ms ?? "",
+    memory: d?.memoryUsedKB ?? d?.memoryused ?? d?.memory_kb ?? "",
+    exitCode: d?.exitCode,
   });
 
   const runCode = useCallback(async () => {
@@ -86,6 +87,7 @@ n = int(data[0])
     setIsRunning(true);
     setError("");
     setResult(null);
+    setVerdict(null); // clear verdict when running
     try {
       const data = await apiFetch(endpointRun, {
         method: "POST",
@@ -100,7 +102,7 @@ n = int(data[0])
       setResult(normalized);
       onResult?.(normalized);
     } catch (e) {
-      setError(e?.message || "Submit failed");
+      setError(e?.message || "Run failed");
     } finally {
       setIsRunning(false);
     }
@@ -111,6 +113,7 @@ n = int(data[0])
     setIsSubmitting(true);
     setError("");
     setResult(null);
+    setVerdict(null);
     try {
       const data = await apiFetch(endpointSubmit, {
         method: "POST",
@@ -122,17 +125,14 @@ n = int(data[0])
       });
       // The submit endpoint returns a verdict string (e.g. "ACCEPTED")
       if (typeof data === 'string') {
-        const verdictResult = {
-          stdout: `Verdict: ${data}`,
-          stderr: "",
-          time: "",
-          memory: "",
-        };
-        setResult(verdictResult);
-        onResult?.(verdictResult);
+        setVerdict(data);
+        onResult?.({ verdict: data });
       } else {
         const normalized = normalizeResult(data);
         setResult(normalized);
+        if (data?.verdict || data?.status) {
+          setVerdict(data.verdict || data.status);
+        }
         onResult?.(normalized);
       }
     } catch (e) {
@@ -155,15 +155,27 @@ n = int(data[0])
     return () => window.removeEventListener("keydown", handler);
   }, [runCode]);
 
+  const verdictColor = (v) => {
+    if (!v) return "";
+    const s = v.toUpperCase();
+    if (s === "ACCEPTED") return "var(--verdict-accepted, #16a34a)";
+    if (s.includes("WRONG")) return "var(--verdict-wrong, #ef4444)";
+    if (s.includes("TIME")) return "var(--verdict-tle, #f59e0b)";
+    if (s.includes("MEMORY")) return "var(--verdict-mle, #8b5cf6)";
+    if (s.includes("RUNTIME") || s.includes("ERROR")) return "var(--verdict-re, #ef4444)";
+    if (s.includes("COMPILATION")) return "var(--verdict-ce, #f97316)";
+    return "var(--colour-2)";
+  };
+
   return (
-    <div className="w-full min-h-0 flex flex-col p-3 sm:p-4 space-y-4 max-h-screen overflow-hidden">
-      {/* Language selector + Run button */}
+    <div className="ide-container">
+      {/* Language selector + Run/Submit buttons */}
       {showLanguageSelector && (
-        <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:justify-between">
+        <div className="ide-toolbar">
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="border rounded px-2 py-1 w-full sm:w-auto"
+            className="ide-lang-select"
             aria-label="Language"
           >
             <option value="cpp">C++17</option>
@@ -171,98 +183,111 @@ n = int(data[0])
             <option value="python">Python 3</option>
           </select>
 
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
+          <div className="ide-btn-group">
+            <button
               onClick={runCode}
               disabled={!canRun}
-              loading={isRunning}
-              className={`px-3 py-1 w-full sm:w-auto ${canRun ? "bg-black text-white" : ""}`}
+              className={`ide-btn ide-btn-run ${!canRun ? "ide-btn-disabled" : ""}`}
               title="Run (Ctrl/Cmd + Enter)"
             >
-              {isRunning ? "Running…" : "Run"}
-            </Button>
+              {isRunning ? (
+                <><span className="ide-spinner" /> Running…</>
+              ) : (
+                <>▶ Run</>
+              )}
+            </button>
             {endpointSubmit && (
-              <Button
+              <button
                 onClick={submitCode}
                 disabled={!canRun}
-                loading={isSubmitting}
-                className={`px-3 py-1 w-full sm:w-auto ${canRun ? "bg-green-600 text-white hover:bg-green-700" : ""}`}
+                className={`ide-btn ide-btn-submit ${!canRun ? "ide-btn-disabled" : ""}`}
               >
-                {isSubmitting ? "Submitting…" : "Submit"}
-              </Button>
+                {isSubmitting ? (
+                  <><span className="ide-spinner" /> Submitting…</>
+                ) : (
+                  <>⬆ Submit</>
+                )}
+              </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Main content area - scrollable */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="space-y-4">
-          {/* Code editor */}
-          <section className="space-y-2">
-            <label className="text-sm font-medium">Code Editor</label>
-            <div className="h-[260px] sm:h-[310px] md:h-[360px] lg:h-[410px] xl:h-[460px]">
-              <CodeEditor
-                language={language}
-                value={code}
-                onChange={setCode}
-                height="100%"
-              />
-            </div>
-          </section>
-
-          {/* STDIN input */}
-          <section className="space-y-2">
-            <label className="text-sm font-medium">Program Input (STDIN)</label>
-            <textarea
-              value={stdinText}
-              onChange={(e) => setStdinText(e.target.value)}
-              className="w-full h-24 sm:h-32 font-mono text-sm border rounded p-3 resize-none"
-              placeholder="Provide input for your program…"
+      {/* Main content area */}
+      <div className="ide-content">
+        {/* Code editor */}
+        <section className="ide-section">
+          <label className="ide-label">Code Editor</label>
+          <div className="ide-editor-wrap">
+            <CodeEditor
+              language={language}
+              value={code}
+              onChange={setCode}
+              height="100%"
             />
-          </section>
+          </div>
+        </section>
 
-          {/* Results */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold">Output</h2>
-                <Metrics result={result} />
-              </div>
-              <pre className="w-full h-24 sm:h-32 border rounded p-3 overflow-auto whitespace-pre-wrap text-sm">
-                {result
-                  ? result.stdout?.length > 0
-                    ? String(result.stdout)
-                    : <span className="text-gray-400">No output</span>
-                  : <span className="text-gray-400">—</span>}
-              </pre>
-            </div>
+        {/* STDIN input */}
+        <section className="ide-section">
+          <label className="ide-label">Program Input (STDIN)</label>
+          <textarea
+            value={stdinText}
+            onChange={(e) => setStdinText(e.target.value)}
+            className="ide-textarea"
+            placeholder="Provide input for your program…"
+          />
+        </section>
 
-            <div className="space-y-2">
-              <h2 className="font-semibold flex items-center gap-2">
-                Errors
-                {result?.exitCode !== undefined && (
-                  <span className="text-xs text-gray-500">(exit code: {result.exitCode})</span>
-                )}
-              </h2>
-              <pre
-                className={`w-full h-24 sm:h-32 border rounded p-3 overflow-auto whitespace-pre-wrap text-sm ${result?.stderr?.length > 0 ? "bg-red-50 border-red-300 text-red-700" : ""
-                  }`}
-              >
-                {result
-                  ? result.stderr?.length > 0
-                    ? String(result.stderr)
-                    : <span className="text-gray-400">No errors</span>
-                  : <span className="text-gray-400">—</span>}
-              </pre>
+        {/* Verdict (separate from output) */}
+        {verdict && (
+          <section className="ide-verdict-section">
+            <div className="ide-verdict-badge" style={{ borderColor: verdictColor(verdict) }}>
+              <span className="ide-verdict-label">Verdict</span>
+              <span className="ide-verdict-value" style={{ color: verdictColor(verdict) }}>
+                {verdict.replace(/_/g, " ")}
+              </span>
             </div>
           </section>
-        </div>
+        )}
+
+        {/* Results */}
+        <section className="ide-results-grid">
+          <div className="ide-result-box">
+            <div className="ide-result-header">
+              <h2 className="ide-result-title">Output</h2>
+              <Metrics result={result} />
+            </div>
+            <pre className="ide-output-pre">
+              {result
+                ? result.stdout?.length > 0
+                  ? String(result.stdout)
+                  : <span className="ide-placeholder">No output</span>
+                : <span className="ide-placeholder">—</span>}
+            </pre>
+          </div>
+
+          <div className="ide-result-box">
+            <h2 className="ide-result-title">
+              Errors
+              {result?.exitCode !== undefined && result?.exitCode !== 0 && (
+                <span className="ide-exit-code">(exit code: {result.exitCode})</span>
+              )}
+            </h2>
+            <pre className={`ide-output-pre ${result?.stderr?.length > 0 ? "ide-error-pre" : ""}`}>
+              {result
+                ? result.stderr?.length > 0
+                  ? String(result.stderr)
+                  : <span className="ide-placeholder">No errors</span>
+                : <span className="ide-placeholder">—</span>}
+            </pre>
+          </div>
+        </section>
       </div>
 
-      {/* Error message - fixed at bottom when present */}
+      {/* Error message */}
       {error && (
-        <div className="flex-shrink-0 border border-red-300 bg-red-50 text-red-700 rounded p-3">
+        <div className="ide-error-banner">
           {error}
         </div>
       )}
@@ -271,11 +296,11 @@ n = int(data[0])
 }
 
 function Metrics({ result }) {
-  if (!result) return <div className="text-xs text-gray-500">time: — | memory: —</div>;
+  if (!result) return <div className="ide-metrics">time: — | memory: —</div>;
   return (
-    <div className="text-xs text-gray-600">
-      time: <span className="font-mono">{String(result.time ?? "—")}</span>{" "}
-      | memory: <span className="font-mono">{String(result.memory ?? "—")}</span>
+    <div className="ide-metrics">
+      time: <span className="ide-mono">{String(result.time ?? "—")}</span>{" "}
+      | memory: <span className="ide-mono">{String(result.memory ?? "—")}</span>
     </div>
   );
 }

@@ -24,6 +24,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     
     List<Submission> findByContestIdOrderBySubmissionTimeDesc(Long contestId);
 
+    List<Submission> findByUserIdAndProblemIdAndContestIdIsNullOrderBySubmissionTimeDesc(Long userId, Long problemId);
+
     // Lightweight projection for standings rebuild
     interface SubmView {
         Long getUserId();

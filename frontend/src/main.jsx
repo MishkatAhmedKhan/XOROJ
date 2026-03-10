@@ -62,7 +62,7 @@ import BlogEditorPage from './pages/BlogEditorPage.jsx'
 
 // Advanced DB Feature Pages
 import LeaderboardPage from './pages/LeaderboardPage.jsx'
-import PlatformDashboard from './pages/PlatformDashboard.jsx'
+
 import AuditLogPage from './pages/AuditLogPage.jsx'
 import UserAnalyticsPage from './pages/UserAnalyticsPage.jsx'
 import RecommendationsPage from './pages/RecommendationsPage.jsx'
@@ -165,7 +165,7 @@ const router = createBrowserRouter([
 
       // Advanced DB Features
       { path: 'leaderboard', element: <LeaderboardPage /> },
-      { path: 'dashboard', element: <PlatformDashboard /> },
+
       { path: 'audit-log', element: <AuditLogPage /> },
       { path: 'analytics/:username', element: <UserAnalyticsPage /> },
       { path: 'recommendations', element: <RecommendationsPage /> },

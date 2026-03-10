@@ -90,7 +90,7 @@ public class ContestService {
                 Long problemId = request.getFirst();
                 Integer problemNum = request.getSecond();
                 
-                Problem problem = problemService.findProblemById(problemId);
+                Problem problem = problemService.findProblemByIdUnfiltered(problemId);
                 if (problem != null) {
                     problem.setProblemNum(problemNum);
                     newProblemSet.add(problem);

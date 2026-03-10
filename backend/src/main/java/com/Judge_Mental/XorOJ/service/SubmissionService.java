@@ -12,12 +12,17 @@ import org.springframework.stereotype.Service;
 import com.Judge_Mental.XorOJ.dto.SubmissionResponseDTO;
 import com.Judge_Mental.XorOJ.entity.Submission;
 import com.Judge_Mental.XorOJ.repo.SubmissionRepository;
+import com.Judge_Mental.XorOJ.repo.ProblemRepository;
+import com.Judge_Mental.XorOJ.entity.Problem;
 
 @Service
 public class SubmissionService {
 
     @Autowired
     private SubmissionRepository submissionRepository;
+    
+    @Autowired
+    private ProblemRepository problemRepository;
     
     @Autowired
     private FileStorageService fileStorageService;
@@ -67,6 +72,13 @@ public class SubmissionService {
     public List<Submission> getSubmissionsByUserIDandContestID(Long userId, Long contestId) {
         return submissionRepository.findByUserIdAndContestId(userId, contestId);
     }
+    
+    public List<SubmissionResponseDTO> getMySubmissionsForProblem(Long userId, Long problemId) {
+        return submissionRepository.findByUserIdAndProblemIdAndContestIdIsNullOrderBySubmissionTimeDesc(userId, problemId)
+                .stream()
+                .map(this::enrichWithProblemTitle)
+                .toList();
+    }
 
     public List<Submission> getPaginatedContestSubmissions(Long contestId, int pageNumber) {
         if (pageNumber < 1) {
@@ -86,7 +98,13 @@ public class SubmissionService {
 
     public List<SubmissionResponseDTO> getSubmissionResponsesByUserId(Long userId) {
         return submissionRepository.findByUserId(userId).stream()
-                .map(SubmissionResponseDTO::fromSubmission)
+                .map(this::enrichWithProblemTitle)
                 .toList();
+    }
+    
+    private SubmissionResponseDTO enrichWithProblemTitle(Submission submission) {
+        SubmissionResponseDTO dto = SubmissionResponseDTO.fromSubmission(submission);
+        problemRepository.findById(submission.getProblemId()).ifPresent(p -> dto.setProblemTitle(p.getTitle()));
+        return dto;
     }
 }

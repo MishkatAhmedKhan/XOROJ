@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 import com.Judge_Mental.XorOJ.dto.ContestResponseDTO;
 import com.Judge_Mental.XorOJ.dto.SubmissionResponseDTO;
 import com.Judge_Mental.XorOJ.entity.XUser;
@@ -73,11 +75,25 @@ public class ProfileController {
     }
 
     @GetMapping("{username}/submissions")
-    public ResponseEntity<List<SubmissionResponseDTO>> getUserSubmissions(@PathVariable String username) {
+    public ResponseEntity<List<SubmissionResponseDTO>> getUserSubmissions(
+        @PathVariable String username,
+        @AuthenticationPrincipal(expression = "user") XUser authUser
+    ) {
         XUser user = userService.findByUsername(username);
 
         if (user != null) {
             List<SubmissionResponseDTO> submissions = submissionService.getSubmissionResponsesByUserId(user.getId());
+            boolean isItMe = user.getUsername().equals(authUser.getUsername());
+            
+            if (!isItMe) {
+                // Filter out submissions from ongoing contests
+                submissions = submissions.stream().filter(sub -> {
+                    if (sub.getContestId() == null) return true;
+                    LocalDateTime endTime = contestService.getContestEndTime(sub.getContestId());
+                    return endTime != null && LocalDateTime.now().isAfter(endTime);
+                }).toList();
+            }
+            
             return ResponseEntity.ok(submissions);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

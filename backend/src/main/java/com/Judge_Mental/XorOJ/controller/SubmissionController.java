@@ -63,6 +63,14 @@ public class SubmissionController {
            .collect(Collectors.toList());
     }
 
+    @GetMapping("/problems/{problemId}/my")
+    public List<SubmissionResponseDTO> getMySubmissionsForProblem(
+        @PathVariable Long problemId,
+        @AuthenticationPrincipal(expression = "user") XUser user) {
+        
+        return submissionService.getMySubmissionsForProblem(user.getId(), problemId);
+    }
+
     public record submissionRequestDTO(String code, String language) {}
     @PostMapping("/contests/{contestId}/problems/{problemId}/submit")
     public SubmissionStatus submitSolution(
@@ -118,7 +126,12 @@ public class SubmissionController {
     @PostMapping("/test")
     public RunResult submitSolution(
         @RequestBody runRequest request) throws IOException, InterruptedException {
-        return judgingService.runCodeWithTest(request.code(), request.stdin());
+        System.out.println("Received code: " + request.code());
+        System.out.println("Received language: " + request.language());
+        System.out.println("Received stdin: " + request.stdin());
+        RunResult result = judgingService.runCodeWithTest(request.code(), request.stdin());
+        System.out.println("Execution result: " + result);
+        return result;
     }
     
     @PostMapping(value = "/testfile", consumes = "multipart/form-data")

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
+import "../styles/styles.css";
+
 export default function Login() {
   const { login } = useAuth();
   const nav = useNavigate();
@@ -30,46 +32,44 @@ export default function Login() {
   }
 
   return (
-    <div className="w-full max-w-md">
-      {/* Header / tagline */}
+    <div className="w-full max-w-md animate-fadeIn">
+      {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-semibold">
-          Welcome to <span className="font-bold">XorOJ</span>
+        <h1 className="text-3xl md:text-4xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          Welcome to <span className="font-bold" style={{ color: "var(--accent-500)" }}>XorOJ</span>
         </h1>
-        <p className="mt-3 text-sm md:text-base opacity-80 themed-text">
+        <p className="mt-3 text-sm md:text-base" style={{ color: "var(--text-secondary)" }}>
           Practice algorithms, run contests, and track your progress — all in one place.
         </p>
       </div>
 
       {/* Card */}
-      <div
-        className="rounded-xl p-6 md:p-7 shadow-sm"
-        style={{
-          backgroundColor: "var(--colour-1)",
-          border: "1px solid var(--colour-5)",
-        }}
-      >
-        <h2 className="text-xl md:text-2xl font-semibold text-center mb-2 themed-text">
+      <div className="panel">
+        <h2 className="text-xl md:text-2xl font-semibold text-center mb-2" style={{ color: "var(--text-primary)" }}>
           Sign in to your account
         </h2>
-        <p className="text-center text-sm opacity-80 mb-6 themed-text">
+        <p className="text-center text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
           New here?{" "}
-          <Link to="/register" className="link">
+          <Link to="/register" style={{ color: "var(--accent-500)", fontWeight: 500 }}>
             Create an account
           </Link>
         </p>
 
         {err && (
-          <p className="mb-3 px-3 py-2 rounded text-sm bg-red-50 text-red-700 border border-red-200">
+          <p className="mb-3 px-3 py-2 rounded-lg text-sm" style={{
+            background: "var(--danger-bg)",
+            color: "var(--danger)",
+            border: "1px solid var(--danger)",
+          }}>
             {err}
           </p>
         )}
 
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm mb-1 themed-text">Username</label>
+            <label className="block text-sm mb-1 font-medium" style={{ color: "var(--text-secondary)" }}>Username</label>
             <input
-              className="input input-bordered w-full"
+              className="input w-full"
               placeholder="Enter your username"
               autoComplete="username"
               value={username}
@@ -78,10 +78,10 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm mb-1 themed-text">Password</label>
+            <label className="block text-sm mb-1 font-medium" style={{ color: "var(--text-secondary)" }}>Password</label>
             <div className="relative">
               <input
-                className="input input-bordered w-full pr-10"
+                className="input w-full pr-10"
                 placeholder="Enter your password"
                 type={showPwd ? "text" : "password"}
                 autoComplete="current-password"
@@ -90,10 +90,10 @@ export default function Login() {
               />
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm opacity-70 hover:opacity-100"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                style={{ color: "var(--text-tertiary)" }}
                 onClick={() => setShowPwd((s) => !s)}
                 aria-label={showPwd ? "Hide password" : "Show password"}
-                title={showPwd ? "Hide password" : "Show password"}
               >
                 {showPwd ? "🙈" : "👁️"}
               </button>
@@ -101,29 +101,28 @@ export default function Login() {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="checkbox checkbox-sm" />
-              <span className="themed-text">Remember me</span>
+            <label className="inline-flex items-center gap-2 cursor-pointer" style={{ color: "var(--text-secondary)" }}>
+              <input type="checkbox" className="rounded" />
+              <span>Remember me</span>
             </label>
-            <a className="link text-sm">Forgot password?</a>
+            <a style={{ color: "var(--accent-500)", fontSize: ".85rem" }}>Forgot password?</a>
           </div>
 
           <button className="btn btn-primary w-full mt-1">Sign in</button>
         </form>
 
         <div className="flex items-center my-6">
-          <span className="flex-1 h-px" style={{ backgroundColor: "var(--colour-5)" }} />
-          <span className="px-2 text-xs opacity-70 themed-text">or</span>
-          <span className="flex-1 h-px" style={{ backgroundColor: "var(--colour-5)" }} />
+          <span className="flex-1 h-px" style={{ background: "var(--border-primary)" }} />
+          <span className="px-3 text-xs" style={{ color: "var(--text-tertiary)" }}>or</span>
+          <span className="flex-1 h-px" style={{ background: "var(--border-primary)" }} />
         </div>
 
-        <Link to="/register" className="btn btn-outline w-full">
+        <Link to="/register" className="btn w-full">
           Create an account
         </Link>
       </div>
 
-      {/* Small legal line */}
-      <p className="mt-3 text-center text-xs opacity-70 themed-text">
+      <p className="mt-3 text-center text-xs" style={{ color: "var(--text-tertiary)" }}>
         By continuing, you agree to our Terms and acknowledge our Privacy Policy.
       </p>
     </div>

@@ -1,10 +1,7 @@
-// src/pages/MyProblems.jsx
+// src/pages/AuthorMyProblems.jsx
 import { useEffect, useState } from "react";
 import { apiFetch } from "../api/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
-import Card from "../components/Card.jsx";
-import Button from "../components/Button.jsx";
 
 export default function MyProblems() {
   const [problems, setProblems] = useState([]);
@@ -13,23 +10,37 @@ export default function MyProblems() {
   const [newTitle, setNewTitle] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  const [publishStatuses, setPublishStatuses] = useState({}); // { problemId: { published, inContest } }
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Open modal automatically if ?action=create
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       setShowModal(true);
     }
   }, [searchParams]);
 
-  // Load existing problems
   useEffect(() => {
     async function loadProblems() {
       try {
         const data = await apiFetch("/api/author/problems/my");
-        setProblems(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        setProblems(list);
+
+        // Fetch publish status for each problem
+        const statuses = {};
+        await Promise.all(
+          list.map(async (p) => {
+            try {
+              const s = await apiFetch(`/api/edit/problems/${p.id}/publish-status`);
+              statuses[p.id] = s;
+            } catch (err) {
+              statuses[p.id] = null;
+            }
+          })
+        );
+        setPublishStatuses(statuses);
       } catch (err) {
         console.error("Failed to load problems", err);
         setProblems([]);
@@ -52,7 +63,6 @@ export default function MyProblems() {
     clearActionParam();
   };
 
-  // Handle create new problem
   const handleCreate = async () => {
     if (!newTitle.trim()) {
       setError("Title cannot be empty");
@@ -73,7 +83,6 @@ export default function MyProblems() {
         return;
       }
 
-      // Redirect to ProblemEditor page for the new problem
       clearActionParam();
       navigate(`/author/problems/${data.id}/edit`, { state: { problemData: data } });
     } catch (err) {
@@ -83,95 +92,105 @@ export default function MyProblems() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading problems...</div>;
+  const getStatusLabel = (problemId) => {
+    const s = publishStatuses[problemId];
+    if (!s) return null;
+    if (s.inContest) return { text: "In Contest", className: "publish-badge publish-badge-contest" };
+    if (s.published) return { text: "Published", className: "publish-badge", style: { background: "var(--success-bg)", color: "var(--success)", border: "1px solid var(--success)" } };
+    return { text: "Draft", className: "publish-badge", style: { background: "var(--bg-tertiary)", color: "var(--text-tertiary)", border: "1px solid var(--border-primary)" } };
+  };
+
+  if (loading) return <div className="p-6" style={{ color: "var(--text-secondary)" }}>Loading problems...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">My Problems</h1>
-        <Button onClick={() => setShowModal(true)}>+ Create Problem</Button>
+        <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>My Problems</h1>
+        <button onClick={() => setShowModal(true)} className="btn btn-primary">+ Create Problem</button>
       </div>
 
-      {/* No problems message */}
+      {/* No problems */}
       {problems.length === 0 ? (
-        <Card>
-          <p className="text-gray-600">No problems yet. Create your first problem 🚀</p>
-        </Card>
+        <div className="panel text-center py-8">
+          <p style={{ color: "var(--text-secondary)" }}>No problems yet. Create your first problem 🚀</p>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {problems.map((p) => (
-            <Card key={p.id} title={`${p.title} (ID: ${p.id})`}>
-              <p className="text-sm text-gray-700 line-clamp-3">{p.statement}</p>
+          {problems.map((p) => {
+            const statusLabel = getStatusLabel(p.id);
+            return (
+              <div key={p.id} className="panel">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-bold text-lg" style={{ color: "var(--text-primary)" }}>
+                    {p.title} <span style={{ color: "var(--text-tertiary)", fontWeight: 400, fontSize: ".85rem" }}>(ID: {p.id})</span>
+                  </h3>
+                  {statusLabel && (
+                    <span className={statusLabel.className} style={statusLabel.style}>
+                      {statusLabel.text}
+                    </span>
+                  )}
+                </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-y-1 text-sm text-gray-600">
-                <span>Difficulty: <b>{p.difficultyRating}</b></span>
-                <span>Accepted: <b>{p.solveCount}</b></span>
-                <span>Time Limit: <b>{p.timeLimit} ms</b></span>
-                <span>Memory: <b>{Math.round(p.memoryLimit / 1024)} MB</b></span>
-              </div>
+                <p className="text-sm line-clamp-3 mb-3" style={{ color: "var(--text-secondary)" }}>{p.statement}</p>
 
-              <div className="mt-4 flex gap-2">
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700"
+                <div className="grid grid-cols-2 gap-y-1 text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+                  <span>Difficulty: <b>{p.difficultyRating}</b></span>
+                  <span>Accepted: <b>{p.solveCount}</b></span>
+                  <span>Time: <b>{p.timeLimit} ms</b></span>
+                  <span>Memory: <b>{Math.round(p.memoryLimit / 1024)} MB</b></span>
+                </div>
+
+                <button
+                  className="btn btn-sm"
                   onClick={() =>
                     navigate(`/author/problems/${p.id}/edit`, { state: { problemData: p } })
                   }
                 >
                   Edit
-                </Button>
+                </button>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Create Problem Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
-            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={closeModal} aria-hidden="true" />
+          <div className="relative rounded-xl shadow-xl w-full max-w-md p-6" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: "var(--text-primary)" }}>
               Create New Problem
             </h2>
 
             {error && (
-              <p className="text-red-500 mb-3 text-sm">{error}</p>
+              <p style={{ color: "var(--danger)" }} className="mb-3 text-sm">{error}</p>
             )}
 
             <input
               type="text"
               placeholder="Problem Title"
-              className="
-                w-full rounded-lg px-3 py-2 mb-4
-                border border-gray-400 dark:border-slate-600
-                bg-white dark:bg-slate-700
-                text-gray-800 dark:text-gray-100
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-              "
-
+              className="input w-full mb-4"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
             />
 
             <div className="flex justify-end gap-3">
-              <Button
-                className="bg-gray-300 hover:bg-gray-400 dark:bg-slate-600 dark:hover:bg-slate-500 text-gray-800 dark:text-gray-200"
-                onClick={closeModal}
-              >
+              <button className="btn" onClick={closeModal}>
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleCreate}
-                loading={creating}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={creating}
+                className="btn btn-primary"
               >
-                Create
-              </Button>
+                {creating ? "Creating..." : "Create"}
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

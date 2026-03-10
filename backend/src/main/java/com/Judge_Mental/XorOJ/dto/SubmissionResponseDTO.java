@@ -12,6 +12,8 @@ public class SubmissionResponseDTO {
     private Long id;
     private Long userId;
     private Long problemId;
+    private String problemTitle;
+    private Long contestId;
     private String language;
     private LocalDateTime submissionTime;
     private SubmissionStatus status;
@@ -21,12 +23,14 @@ public class SubmissionResponseDTO {
     public SubmissionResponseDTO() {
     }
     
-    public SubmissionResponseDTO(Long id, Long userId, Long problemId, String language, 
+    public SubmissionResponseDTO(Long id, Long userId, Long problemId, Long contestId, String problemTitle, String language, 
                                LocalDateTime submissionTime, SubmissionStatus status, 
                                Long executionTime, Long memoryUsed) {
         this.id = id;
         this.userId = userId;
         this.problemId = problemId;
+        this.contestId = contestId;
+        this.problemTitle = problemTitle;
         this.language = language;
         this.submissionTime = submissionTime;
         this.status = status;
@@ -41,6 +45,7 @@ public class SubmissionResponseDTO {
         dto.setId(submission.getId());
         dto.setUserId(submission.getUserId());
         dto.setProblemId(submission.getProblemId());
+        dto.setContestId(submission.getContestId());
         dto.setLanguage(submission.getLanguage());
         dto.setSubmissionTime(submission.getSubmissionTime());
         dto.setStatus(submission.getStatus());
