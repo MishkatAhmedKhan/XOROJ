@@ -1,6 +1,6 @@
-# Online Judge Project
+# XorOJ — Online Judge
 
-An online platform for submitting and evaluating code. This project uses **PostgreSQL** for the database, **Docker** for secure code execution, and **local file storage** for problem artifacts and user submissions.
+A competitive programming online judge platform. Built with **Spring Boot**, **React**, and **PostgreSQL**. Code execution is handled natively via `g++` and `ProcessBuilder` — no Docker required.
 
 ---
 
@@ -9,10 +9,9 @@ An online platform for submitting and evaluating code. This project uses **Postg
 1. [Project Overview](#project-overview)
 2. [Technologies Used](#technologies-used)
 3. [Developer Setup](#developer-setup)
-
+   * [Prerequisites](#prerequisites)
    * [Backend Setup](#backend-setup)
    * [Frontend Setup](#frontend-setup)
-   * [Docker Setup](#docker-setup)
 4. [Running the Application](#running-the-application)
 5. [User Guide](#user-guide)
 6. [Configuration](#configuration)
@@ -21,28 +20,35 @@ An online platform for submitting and evaluating code. This project uses **Postg
 
 ## Project Overview
 
-This online judge allows users to:
+XorOJ allows users to:
 
-* Submit code in multiple languages.
-* Create problems and contests.
-* Evaluate submissions in a secure, sandboxed environment using Docker.
-* Store submissions and problem artifacts locally.
-
-The problem creation page is intuitive for users familiar with standard online judge platforms.
+* Submit C++ code to problems and receive instant verdicts.
+* Create and manage problems with test cases, validators, and custom checkers.
+* Participate in contests with ICPC-style standings.
+* Track progress via leaderboards, activity heatmaps, and submission analytics.
+* Read and write blog posts, vote, comment, and bookmark content.
+* Store submissions and problem artifacts locally on the filesystem.
 
 ---
 
 ## Technologies Used
 
-* **Backend:** Spring Boot (Java), Maven
-* **Frontend:** Vite + React (or other frontend framework)
-* **Database:** PostgreSQL
-* **Code Execution:** Docker containers
+* **Backend:** Java 24, Spring Boot 3.5, Spring Security, Spring Data JPA, JWT
+* **Frontend:** React 19, Vite 7, Tailwind CSS, DaisyUI, Monaco Editor, MathJax
+* **Database:** PostgreSQL 14+ (triggers, stored functions, materialized views, cursors)
+* **Code Execution:** Native `g++` compilation and `ProcessBuilder` execution (`CppExecutor`)
 * **Storage:** Local file storage for submissions and problem data
 
 ---
 
 ## Developer Setup
+
+### Prerequisites
+
+* **Java 24** (or compatible JDK)
+* **Node.js** (v18+)
+* **PostgreSQL 14+**
+* **g++** (GCC) installed and available on PATH
 
 ### Backend Setup
 
@@ -50,12 +56,12 @@ The problem creation page is intuitive for users familiar with standard online j
    Download and install from [PostgreSQL Official Site](https://www.postgresql.org/download/).
 
 2. **Set Environment Variables**
-   Create a `.env` file in the same directory as `application.yml`:
+   Create a `.env` file in the `backend/` directory (same level as `application.yml`):
 
    ```env
-   DB_USERNAME=your_username
-   DB_NAME=your_database_name
-   DB_PASSWORD=your_password
+   POSTGRES_URL=jdbc:postgresql://localhost:5432/your_database_name
+   POSTGRES_USERNAME=your_username
+   POSTGRES_PASSWORD=your_password
    ```
 
 3. **Run Backend**
@@ -94,32 +100,13 @@ The problem creation page is intuitive for users familiar with standard online j
 
 ---
 
-### Docker Setup
-
-1. **Build the Docker Image**
-
-   ```bash
-   docker build -t gcc-time:13 .
-   ```
-
-2. **Update Docker Image in Backend**
-   Open `cppExecutor.java` and ensure the image name/tag matches the one you built:
-
-   ```java
-   // Example
-   String dockerImage = "gcc-time:13";
-   ```
-
-3. Docker is used to securely execute user-submitted code in a sandboxed environment.
-
----
-
 ## Running the Full Application
 
 1. Start PostgreSQL.
-2. Run backend: `./mvnw spring-boot:run` (inside backend).
-3. Run frontend: `npm run dev` (inside frontend).
-4. Ensure backend port matches frontend configuration (`vite.config.js`).
+2. Ensure `g++` is installed and on your PATH.
+3. Run backend: `./mvnw spring-boot:run` (inside `backend/`).
+4. Run frontend: `npm run dev` (inside `frontend/`).
+5. Ensure backend port matches frontend configuration (`vite.config.js`).
 
 ---
 
@@ -129,10 +116,10 @@ The problem creation page is intuitive for users familiar with standard online j
   Anyone can create problems or contests. The interface is intuitive and similar to other online judges.
 
 * **Submitting Code**
-  Users can submit code to problems, which is executed in Docker containers for sandboxing.
+  Users submit C++ code, which is compiled with `g++` and executed natively via `ProcessBuilder` with time and memory limits.
 
 * **Viewing Results**
-  Submission results and scores are displayed on the frontend in real-time.
+  Submission results (AC, WA, TLE, MLE, RE, CE) and scores are displayed on the frontend.
 
 ---
 
@@ -142,10 +129,8 @@ The problem creation page is intuitive for users familiar with standard online j
 
 * **Frontend backend URL:** `vite.config.js`
 
-* **Docker image name:** `cppExecutor.java`
-
 * **Local storage paths:**
 
-  * Problem artifacts: `/uploads/problems/`
-  * Submissions: `/uploads/submissions/`
+  * Problem artifacts: `uploads/problems/`
+  * Submissions: `uploads/submissions/`
   This can be changed in application.yml file
