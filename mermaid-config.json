@@ -1,0 +1,32 @@
+{
+  "theme": "dark",
+  "themeVariables": {
+    "darkMode": true,
+    "background": "#0d1117",
+    "primaryColor": "#1a2332",
+    "primaryTextColor": "#b5e853",
+    "primaryBorderColor": "#4a5e3a",
+    "secondaryColor": "#161b22",
+    "secondaryTextColor": "#b5e853",
+    "secondaryBorderColor": "#4a5e3a",
+    "tertiaryColor": "#0d1117",
+    "tertiaryTextColor": "#b5e853", 
+    "tertiaryBorderColor": "#4a5e3a",
+    "lineColor": "#6a9f3a",
+    "textColor": "#b5e853",
+    "mainBkg": "#1a2332",
+    "nodeBorder": "#4a5e3a",
+    "clusterBkg": "#0d1117",
+    "titleColor": "#b5e853",
+    "edgeLabelBackground": "#0d1117",
+    "fontFamily": "Consolas, 'Courier New', monospace",
+    "fontSize": "14px"
+  },
+  "er": {
+    "diagramPadding": 30,
+    "entityPadding": 15,
+    "useMaxWidth": false,
+    "layoutDirection": "TB",
+    "minEntityWidth": 120
+  }
+}

@@ -1,0 +1,183 @@
+erDiagram
+    users {
+        bigint id PK
+        varchar username UK
+        varchar email UK
+        varchar password
+        varchar first_name
+        varchar last_name
+        varchar role
+        varchar bio
+        varchar contact
+        varchar country
+        varchar institute
+    }
+
+    problems {
+        bigint id PK
+        varchar title UK
+        bigint author_id FK
+        text description
+        text input_format
+        text output_format
+        text sample_input
+        text sample_output
+        text notes
+        varchar input_file_type
+        varchar output_file_type
+        int time_limit
+        int memory_limit
+        int difficulty_rating
+        int problem_num
+        int solve_count
+        boolean published
+        varchar status
+        varchar checker_path
+        varchar main_solution_path
+        varchar validator_path
+    }
+
+    contest {
+        bigint id PK
+        bigint author_id
+        varchar title
+        varchar description
+        timestamp start_time
+        timestamp end_time
+        int duration
+        varchar status
+    }
+
+    submissions {
+        bigint id PK
+        bigint user_id FK
+        bigint problem_id FK
+        bigint contest_id FK
+        varchar language
+        varchar file_path
+        varchar status
+        int score
+        bigint execution_time
+        bigint memory_used
+        varchar error_message
+        timestamp submission_time
+    }
+
+    blog_posts {
+        bigint id PK
+        bigint author_id
+        varchar author_username
+        varchar title
+        text content
+        int upvotes
+        int downvotes
+        int stars
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    blog_comments {
+        bigint id PK
+        bigint blog_post_id FK
+        bigint author_id
+        varchar author_username
+        text content
+        bigint parent_comment_id
+        int upvotes
+        int downvotes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    blog_post_tags {
+        bigint blog_post_id FK
+        varchar tags
+    }
+
+    blog_stars {
+        bigint id PK
+        bigint blog_post_id UK
+        bigint user_id UK
+    }
+
+    blog_votes {
+        bigint id PK
+        bigint target_id UK
+        varchar target_type UK
+        bigint user_id UK
+        int value
+    }
+
+    contest_participants {
+        bigint contest_id PK
+        bigint user_id PK
+    }
+
+    contest_problems {
+        bigint contest_id PK
+        bigint problem_id PK
+    }
+
+    problem_tags {
+        bigint problem_id FK
+        varchar tags
+    }
+
+    problem_contributors {
+        bigint problem_id PK
+        bigint user_id PK
+        varchar role
+    }
+
+    test_files {
+        bigint problem_id FK
+        int test_id PK
+        varchar file_name
+        varchar file_path
+    }
+
+    generator_files {
+        bigint problem_id FK
+        int generator_id PK
+        varchar file_name
+        varchar file_path
+    }
+
+    standings_snapshot {
+        bigint contest_id PK
+        text payload_json
+        boolean finalized
+        timestamp updated_at
+        bigint version
+    }
+
+    audit_log {
+        bigint id PK
+        varchar table_name
+        varchar operation
+        bigint row_id
+        text old_data
+        text new_data
+        varchar changed_by
+        timestamp changed_at
+    }
+
+    users ||--o{ submissions : "submits"
+    problems ||--o{ submissions : "has"
+    contest ||--o{ submissions : "contains"
+
+    users ||--o{ contest_participants : "joins"
+    contest ||--o{ contest_participants : "has"
+
+    problems ||--o{ contest_problems : "listed_in"
+    contest ||--o{ contest_problems : "includes"
+
+    problems ||--o{ problem_tags : "tagged"
+    problems ||--o{ problem_contributors : "contributed_by"
+    users ||--o{ problem_contributors : "contributes_to"
+
+    problems ||--o{ test_files : "has_tests"
+    problems ||--o{ generator_files : "has_generators"
+
+    blog_posts ||--o{ blog_comments : "has_comments"
+    blog_posts ||--o{ blog_post_tags : "tagged_with"
